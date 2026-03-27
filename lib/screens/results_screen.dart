@@ -6,6 +6,8 @@ import '../models/models.dart';
 import '../providers/user_profile_provider.dart';
 import '../services/medical_analyzer_service.dart';
 import '../services/report_service.dart';
+import '../providers/reminder_provider.dart';
+import '../models/reminder_model.dart';
 
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
@@ -77,6 +79,15 @@ class ResultsScreen extends StatelessWidget {
       safetyConflicts = MedicalAnalyzerService().checkSafetyConflicts(med, profileProvider.profile!);
     }
 
+    final reminderProvider = context.watch<ReminderProvider>();
+    final activeMedNames = reminderProvider.reminders
+        .where((r) => r.isActive)
+        .map((r) => r.medicationName)
+        .toList();
+    
+    final interactionWarnings = MedicalAnalyzerService()
+        .checkInteractionsWithActiveMeds(med, activeMedNames);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
@@ -88,6 +99,9 @@ class ResultsScreen extends StatelessWidget {
           
           if (safetyConflicts.isNotEmpty)
             _buildSafetyConflictCard(context, safetyConflicts),
+            
+          if (interactionWarnings.isNotEmpty)
+            _buildInteractionWarningCard(context, interactionWarnings),
           
           _buildResultHeader(
             context, 
@@ -119,6 +133,15 @@ class ResultsScreen extends StatelessWidget {
             med.simpleExplanation,
             Icons.psychology,
             Colors.purple,
+          ),
+          
+          const SizedBox(height: 16),
+          _buildActionButton(
+            context,
+            'Set Reminder',
+            Icons.notification_add,
+            Colors.teal,
+            () => _showSetReminderDialog(context, med),
           ),
           
           if (med.requiresPrescription)
@@ -526,6 +549,114 @@ class ResultsScreen extends StatelessWidget {
             'Always consult with a qualified medical professional before making any health decisions.',
             style: TextStyle(fontSize: 11, color: Colors.grey),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onPressed) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon),
+        label: Text(label),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+    );
+  }
+
+  void _showSetReminderDialog(BuildContext context, Medication med) async {
+    TimeOfDay? selectedTime = const TimeOfDay(hour: 9, minute: 0);
+    final dosageController = TextEditingController(text: med.dosage?.split(' ').first ?? '1 pill');
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text('Reminder for ${med.name}', style: const TextStyle(fontWeight: FontWeight.bold)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('Time'),
+                subtitle: Text(selectedTime!.format(context)),
+                leading: const Icon(Icons.access_time),
+                onTap: () async {
+                  final time = await showTimePicker(context: context, initialTime: selectedTime!);
+                  if (time != null) setState(() => selectedTime = time);
+                },
+              ),
+              TextField(
+                controller: dosageController,
+                decoration: const InputDecoration(
+                  labelText: 'Dosage',
+                  hintText: 'e.g. 1 pill, 5ml',
+                  prefixIcon: Icon(Icons.healing),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            ElevatedButton(
+              onPressed: () {
+                final reminder = MedicationReminder(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  medicationName: med.name,
+                  time: selectedTime!,
+                  dosage: dosageController.text,
+                );
+                context.read<ReminderProvider>().addReminder(reminder);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Reminder set for ${med.name} at ${selectedTime!.format(context)}')),
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInteractionWarningCard(BuildContext context, List<String> warnings) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.red.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red),
+              SizedBox(width: 8),
+              Text('Drug-Drug Interaction Alert', 
+                   style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 16)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...warnings.map((w) => Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('• ', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                Expanded(child: Text(w, style: const TextStyle(fontSize: 13))),
+              ],
+            ),
+          )).toList(),
         ],
       ),
     );

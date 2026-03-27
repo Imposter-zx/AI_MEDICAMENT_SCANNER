@@ -8,7 +8,10 @@ import 'providers/medical_data_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'providers/user_profile_provider.dart';
+import 'providers/reminder_provider.dart';
 import 'screens/profile_screen.dart';
+import 'screens/trends_screen.dart';
+import 'screens/medication_search_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +26,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => MedicalDataProvider()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ReminderProvider()),
       ],
       child: MaterialApp(
         title: 'AI Medical Assistant',
@@ -51,6 +55,8 @@ class MyApp extends StatelessWidget {
           '/medical-imaging': (context) => const MedicalImagingScreen(),
           '/results': (context) => const ResultsScreen(),
           '/profile': (context) => const ProfileScreen(),
+          '/trends': (context) => const TrendsScreen(),
+          '/search': (context) => const MedicationSearchScreen(),
         },
       ),
     );

@@ -75,6 +75,40 @@ class MedicalAnalyzerService {
       ));
     }
 
+    final cholesterolMatch = RegExp(r'cholesterol[\:\s]+(\d+)').firstMatch(normalizedText);
+    if (cholesterolMatch != null) {
+      final val = int.parse(cholesterolMatch.group(1)!);
+      findings.add(KeyFinding(
+        label: "Total Cholesterol",
+        value: val.toString(),
+        normalRange: "< 200 mg/dL",
+        isAbnormal: val >= 200,
+      ));
+    }
+
+    final ldlMatch = RegExp(r'ldl[\:\s]+(\d+)').firstMatch(normalizedText);
+    if (ldlMatch != null) {
+      final val = int.parse(ldlMatch.group(1)!);
+      findings.add(KeyFinding(
+        label: "LDL Cholesterol",
+        value: val.toString(),
+        normalRange: "< 100 mg/dL",
+        isAbnormal: val >= 100,
+      ));
+    }
+
+    final bpMatch = RegExp(r'bp[\:\s]+(\d+)/(\d+)').firstMatch(normalizedText);
+    if (bpMatch != null) {
+      final systolic = int.parse(bpMatch.group(1)!);
+      final diastolic = int.parse(bpMatch.group(2)!);
+      findings.add(KeyFinding(
+        label: "Blood Pressure",
+        value: "$systolic/$diastolic",
+        normalRange: "< 120/80 mmHg",
+        isAbnormal: systolic >= 120 || diastolic >= 80,
+      ));
+    }
+
     return MedicalDocument(
       documentType: type,
       extractedText: text,
@@ -156,5 +190,30 @@ class MedicalAnalyzerService {
     }
 
     return interactions;
+  }
+
+  /// New feature: Check single med against a list of active medications
+  List<String> checkInteractionsWithActiveMeds(Medication newMed, List<String> activeMedNames) {
+    List<String> warnings = [];
+    if (activeMedNames.isEmpty) return warnings;
+
+    final newName = newMed.name.toLowerCase();
+    
+    for (final activeName in activeMedNames) {
+      final active = activeName.toLowerCase();
+      
+      // Simple logic for demonstration (as per requested phase)
+      if (newName.contains('aspirin') && active.contains('ibuprofen')) {
+        warnings.add("Warning: Taking ${newMed.name} while on $activeName can increase bleeding risk.");
+      }
+      if (newName.contains('ibuprofen') && active.contains('aspirin')) {
+        warnings.add("Warning: Taking ${newMed.name} while on $activeName can increase bleeding risk.");
+      }
+      if (newName.contains('warfarin') && active.contains('aspirin')) {
+        warnings.add("CRITICAL: Significant bleeding risk when combining ${newMed.name} with $activeName.");
+      }
+    }
+    
+    return warnings;
   }
 }

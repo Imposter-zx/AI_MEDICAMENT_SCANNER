@@ -1,11 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:confetti/confetti.dart';
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../providers/reminder_provider.dart';
+import '../models/reminder_model.dart';
 import '../models/models.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late ConfettiController _confettiController;
+  bool _hasCelebratedToday = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+  }
+
+  @override
+  void dispose() {
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  void _checkAndCelebrate(List<MedicationReminder> reminders) {
+    if (reminders.isEmpty) return;
+    
+    final activeReminders = reminders.where((r) => r.isActive).toList();
+    if (activeReminders.isEmpty) return;
+
+    final now = DateTime.now();
+    final allTakenToday = activeReminders.every((r) {
+      if (r.lastTaken == null) return false;
+      return r.lastTaken!.year == now.year && 
+             r.lastTaken!.month == now.month && 
+             r.lastTaken!.day == now.day;
+    });
+
+    if (allTakenToday && !_hasCelebratedToday) {
+      _confettiController.play();
+      setState(() {
+        _hasCelebratedToday = true;
+      });
+    } else if (!allTakenToday) {
+      _hasCelebratedToday = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,62 +68,68 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Welcome Header
-              _buildHeader(context),
-              const SizedBox(height: 24),
-
-              // Main Features
-              const Text(
-                'Choose a Feature',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              
-              Row(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medication_icon.png', 'Med Scan', '/medication-scan')),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/document_scanner_icon.png', 'Docs', '/document-analysis')),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medical_imaging_icon.png', 'Imaging', '/medical-imaging')),
-                ],
-              ),
-              
-              const SizedBox(height: 32),
-
-              // Recent History Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: 24),
                   const Text(
-                    'Recent Analyses',
+                    'Choose a Feature',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Logic to view all history if needed
-                    },
-                    child: const Text('View All'),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medication_icon.png', 'Scan', '/medication-scan')),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/document_scanner_icon.png', 'Docs', '/document-analysis')),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medical_imaging_icon.png', 'Imaging', '/medical-imaging')),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildActionCard(context, Icons.analytics_outlined, 'Trends', '/trends', Colors.orange)),
+                      const SizedBox(width: 8),
+                      Expanded(child: _buildActionCard(context, Icons.manage_search, 'Search', '/search', Colors.green)),
+                    ],
                   ),
+                  const SizedBox(height: 32),
+                  _buildMedicationDashboard(context),
+                  const SizedBox(height: 32),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Recent Analyses',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text('View All'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const HistoryList(),
+                  const SizedBox(height: 32),
+                  _buildSafetyNotice(),
                 ],
               ),
-              const SizedBox(height: 8),
-              
-              const HistoryList(),
-              
-              const SizedBox(height: 32),
-
-              // Safety Guidelines
-              _buildSafetyNotice(),
-            ],
+            ),
           ),
-        ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirectionality: BlastDirectionality.explosive,
+              shouldLoop: false,
+              colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -86,8 +139,6 @@ class HomeScreen extends StatelessWidget {
       builder: (context, profileProvider, child) {
         final profile = profileProvider.profile;
         final name = profile?.name ?? "Guest";
-        
-        // Dynamic greeting based on time of day
         final hour = DateTime.now().hour;
         String greetingPrefix = "Good Morning";
         if (hour >= 12 && hour < 17) greetingPrefix = "Good Afternoon";
@@ -103,11 +154,7 @@ class HomeScreen extends StatelessWidget {
               fit: BoxFit.cover,
             ),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
+              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
             ],
           ),
           child: Container(
@@ -126,12 +173,7 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Text(
                   '$greetingPrefix,\n$name',
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
-                  ),
+                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -144,11 +186,7 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       profile != null ? 'Health Profile Active' : 'Set up your health profile',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withOpacity(0.9),
-                        letterSpacing: 0.5,
-                      ),
+                      style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9), letterSpacing: 0.5),
                     ),
                   ],
                 ),
@@ -160,35 +198,161 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildActionCard(BuildContext context, IconData icon, String title, String route, Color color) {
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, route),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildSmallFeatureCard(BuildContext context, String assetPath, String title, String route) {
     return InkWell(
       onTap: () => Navigator.pushNamed(context, route),
       borderRadius: BorderRadius.circular(20),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
           ],
         ),
         child: Column(
           children: [
-            Image.asset(assetPath, height: 40, width: 40),
-            const SizedBox(height: 12),
+            Image.asset(assetPath, height: 28, width: 28),
+            const SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMedicationDashboard(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Active Medications',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
+        Consumer<ReminderProvider>(
+          builder: (context, provider, _) {
+            // Trigger celebration check
+            WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndCelebrate(provider.reminders));
+            
+            final activeReminders = provider.reminders.where((r) => r.isActive).toList();
+            if (activeReminders.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue),
+                    SizedBox(width: 12),
+                    Expanded(child: Text('No active medications. Scan a medicine to set a reminder.')),
+                  ],
+                ),
+              );
+            }
+
+            return SizedBox(
+              height: 140,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: activeReminders.length,
+                itemBuilder: (context, index) => _buildReminderCard(context, activeReminders[index], provider),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReminderCard(BuildContext context, MedicationReminder reminder, ReminderProvider provider) {
+    bool isTakenToday = false;
+    if (reminder.lastTaken != null) {
+      final now = DateTime.now();
+      isTakenToday = reminder.lastTaken!.year == now.year && 
+                     reminder.lastTaken!.month == now.month && 
+                     reminder.lastTaken!.day == now.day;
+    }
+
+    return Container(
+      width: 220,
+      margin: const EdgeInsets.only(right: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isTakenToday ? Colors.green.withOpacity(0.3) : Colors.blue.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  reminder.medicationName,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(isTakenToday ? Icons.check_circle : Icons.access_time, 
+                   color: isTakenToday ? Colors.green : Colors.blue, size: 20),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text('${reminder.dosage} • ${reminder.time.format(context)}', 
+               style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: isTakenToday ? null : () => provider.markAsTaken(reminder.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: Text(isTakenToday ? 'Taken' : 'Mark Taken'),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -208,10 +372,7 @@ class HomeScreen extends StatelessWidget {
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
               SizedBox(width: 8),
-              Text(
-                'Safety Reminder',
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange),
-              ),
+              Text('Safety Reminder', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
             ],
           ),
           SizedBox(height: 8),
@@ -240,11 +401,7 @@ class HistoryList extends StatelessWidget {
                 children: [
                   Icon(Icons.history, size: 48, color: Colors.grey.withOpacity(0.5)),
                   const SizedBox(height: 12),
-                  const Text(
-                    'No recent analyses found.\nScan something to get started!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                  const Text('No recent analyses found.\nScan something to get started!', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                 ],
               ),
             ),
@@ -267,21 +424,12 @@ class HistoryList extends StatelessWidget {
                   color: _getTypeColor(item.type).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Center(
-                  child: Icon(_getTypeIcon(item.type), color: _getTypeColor(item.type)),
-                ),
+                child: Center(child: Icon(_getTypeIcon(item.type), color: _getTypeColor(item.type))),
               ),
-              title: Text(
-                _getItemTitle(item),
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-              ),
-              subtitle: Text(
-                '${item.timestamp.day}/${item.timestamp.month} • ${_getTypeLabel(item.type)}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
-              ),
+              title: Text(_getItemTitle(item), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+              subtitle: Text('${item.timestamp.day}/${item.timestamp.month} • ${_getTypeLabel(item.type)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
               trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
-                // Set as current results and navigate
                 if (item.type == 'medication') {
                   provider.currentMedication = item.data as Medication;
                 } else if (item.type == 'document') {
@@ -331,60 +479,5 @@ class HistoryList extends StatelessWidget {
     if (item.type == 'document') return (item.data as MedicalDocument).documentType.toUpperCase();
     if (item.type == 'imaging') return (item.data as MedicalImagingResult).imagingType;
     return 'Analysis Result';
-  }
-}
-
-class FeatureCard extends StatelessWidget {
-  final String icon;
-  final String title;
-  final String description;
-  final VoidCallback onTap;
-
-  const FeatureCard({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(icon, style: const TextStyle(fontSize: 32)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const Icon(Icons.arrow_forward, color: Colors.blue),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                description,
-                style: const TextStyle(fontSize: 13, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
