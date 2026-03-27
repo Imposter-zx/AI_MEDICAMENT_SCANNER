@@ -1,0 +1,140 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
+import '../models/models.dart';
+
+class ReportService {
+  Future<void> generateAndShareReport(Medication med, UserProfile? profile) async {
+    final pdf = pw.Document();
+    final date = DateFormat('MMMM dd, yyyy HH:mm').format(DateTime.now());
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (pw.Context context) {
+          return [
+            _buildHeader(date),
+            pw.SizedBox(height: 20),
+            if (profile != null) _buildUserProfileSection(profile),
+            pw.SizedBox(height: 20),
+            _buildMedicationHeader(med),
+            pw.SizedBox(height: 20),
+            _buildInfoSection('Detailed Analysis', med.description),
+            _buildInfoSection('Indications', med.usedFor),
+            _buildInfoSection('Usage Instructions', med.whenToUse),
+            if (med.dosage != null) _buildInfoSection('Dosage Guidance', med.dosage!),
+            _buildInfoSection('Side Effects', med.sideEffects),
+            pw.SizedBox(height: 20),
+            _buildWarningSection(med.contraindications),
+            pw.Spacer(),
+            _buildFooter(),
+          ];
+        },
+      ),
+    );
+
+    await Printing.sharePdf(
+      bytes: await pdf.save(),
+      filename: 'Medical_Report_${med.name.replaceAll(' ', '_')}.pdf',
+    );
+  }
+
+  pw.Widget _buildHeader(String date) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('AI MEDICAMENT SCANNER', 
+              style: pw.TextStyle(fontSize: 24, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
+            pw.Text('Professional Medical Analysis Report', 
+              style: const pw.TextStyle(fontSize: 12, color: PdfColors.grey)),
+          ],
+        ),
+        pw.Text(date, style: const pw.TextStyle(fontSize: 10, color: PdfColors.grey)),
+      ],
+    );
+  }
+
+  pw.Widget _buildUserProfileSection(UserProfile profile) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text('PATIENT PROFILE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.blue700)),
+          pw.SizedBox(height: 4),
+          pw.Text('Name: ${profile.name} ${profile.age != null ? '(${profile.age} yrs)' : ''}'),
+          if (profile.allergies.isNotEmpty) 
+            pw.Text('Known Allergies: ${profile.allergies.join(", ")}', style: pw.TextStyle(color: PdfColors.red700)),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildMedicationHeader(Medication med) {
+    return pw.Container(
+      width: double.infinity,
+      padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      color: PdfColors.blue800,
+      child: pw.Text(med.name.toUpperCase(), 
+        style: pw.TextStyle(color: PdfColors.white, fontSize: 18, fontWeight: pw.FontWeight.bold)),
+    );
+  }
+
+  pw.Widget _buildInfoSection(String title, String content) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 8),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(title, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12, color: PdfColors.blue800)),
+          pw.SizedBox(height: 4),
+          pw.Text(content, style: const pw.TextStyle(fontSize: 11)),
+          pw.Divider(color: PdfColors.grey300),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildWarningSection(String contraindications) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(12),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.red300),
+        color: PdfColors.red50,
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Row(children: [
+            pw.Text('IMPORTANT: CONTRAINDICATIONS & SAFETY', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.red900)),
+          ]),
+          pw.SizedBox(height: 4),
+          pw.Text(contraindications, style: pw.TextStyle(fontSize: 10, color: PdfColors.red800)),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildFooter() {
+    return pw.Column(
+      children: [
+        pw.Divider(),
+        pw.Text('DISCLAIMER: This report was generated by an AI tool for informational purposes only. It is NOT a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician.',
+          textAlign: pw.TextAlign.center,
+          style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+      ],
+    );
+  }
+}
