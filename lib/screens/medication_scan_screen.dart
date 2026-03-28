@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/medical_data_provider.dart';
+import '../providers/user_profile_provider.dart';
 
 class MedicationScanScreen extends StatefulWidget {
   const MedicationScanScreen({super.key});
@@ -223,7 +224,9 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
     if (_selectedImage == null) return;
 
     final provider = context.read<MedicalDataProvider>();
-    await provider.analyzeMedication(_selectedImage!.path);
+    final profileProvider = context.read<UserProfileProvider>();
+    final userId = profileProvider.activeProfileId ?? 'default';
+    await provider.analyzeMedication(_selectedImage!.path, userId);
 
     if (mounted && provider.currentMedication != null) {
       Navigator.pushNamed(context, '/results');

@@ -150,22 +150,37 @@ class MedicalAnalyzerService {
 
   List<String> checkSafetyConflicts(Medication med, UserProfile profile) {
     List<String> conflicts = [];
+    final medName = med.name.toLowerCase();
+    final activeIng = med.activeIngredient?.toLowerCase() ?? "";
     
     // Check allergies
-    if (med.activeIngredient != null) {
-      for (var allergy in profile.allergies) {
-        if (med.activeIngredient!.toLowerCase().contains(allergy.toLowerCase()) ||
-            med.name.toLowerCase().contains(allergy.toLowerCase())) {
-          conflicts.add("Potential Allergy: You are allergic to $allergy, which might be present in ${med.name}.");
-        }
+    for (var allergy in profile.allergies) {
+      final a = allergy.toLowerCase();
+      if (activeIng.contains(a) || medName.contains(a)) {
+        conflicts.add("Potential Allergy: You are allergic to $allergy, which might be present in ${med.name}.");
+      }
+      
+      // Synonym/Group matching (Simple heuristic)
+      if (a == 'penicillin' && (activeIng.contains('amoxicillin') || activeIng.contains('ampicillin'))) {
+        conflicts.add("Allergy Warning: ${med.name} contains $activeIng, which is a penicillin-type antibiotic.");
+      }
+      if ((a == 'sulfa' || a == 'sulfonamide') && activeIng.contains('sulf')) {
+        conflicts.add("Allergy Warning: ${med.name} contains $activeIng, which may trigger sulfa allergies.");
       }
     }
     
-    // Check contraindications
+    // Check contraindications against profile conditions
     for (var condition in profile.medicalConditions) {
+      final c = condition.toLowerCase();
       for (var contra in med.contraindications) {
-        if (contra.toLowerCase().contains(condition.toLowerCase())) {
+        final ct = contra.toLowerCase();
+        if (ct.contains(c)) {
           conflicts.add("Condition Warning: ${med.name} is generally not recommended for people with $condition.");
+        }
+        
+        // Logical mapping (e.g., Stomach issues -> Ulcer)
+        if (c.contains('ulcer') && (ct.contains('stomach') || ct.contains('gastric'))) {
+          conflicts.add("Condition Warning: ${med.name} mentions $contra, which may be risky for your stomach ulcer history.");
         }
       }
     }

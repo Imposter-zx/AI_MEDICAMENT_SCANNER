@@ -50,7 +50,7 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeMedication(String imagePath) async {
+  Future<void> analyzeMedication(String imagePath, String userId) async {
     _startLoading();
     currentImagePath = imagePath;
     try {
@@ -61,6 +61,7 @@ class MedicalDataProvider with ChangeNotifier {
       if (currentMedication != null && currentMedication!.name != "Unknown Medication") {
         await _saveHistoryItem(HistoryItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: userId,
           timestamp: DateTime.now(),
           type: 'medication',
           data: currentMedication!,
@@ -74,7 +75,7 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeDocument(String imagePath) async {
+  Future<void> analyzeDocument(String imagePath, String userId) async {
     _startLoading();
     currentImagePath = imagePath;
     try {
@@ -85,6 +86,7 @@ class MedicalDataProvider with ChangeNotifier {
       if (currentDocument != null) {
         await _saveHistoryItem(HistoryItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: userId,
           timestamp: DateTime.now(),
           type: 'document',
           data: currentDocument!,
@@ -98,7 +100,7 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeMedicalImage(String imagePath) async {
+  Future<void> analyzeMedicalImage(String imagePath, String userId) async {
     _startLoading();
     currentImagePath = imagePath;
     try {
@@ -107,6 +109,7 @@ class MedicalDataProvider with ChangeNotifier {
       if (currentImagingResult != null) {
         await _saveHistoryItem(HistoryItem(
           id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: userId,
           timestamp: DateTime.now(),
           type: 'imaging',
           data: currentImagingResult!,

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/medical_data_provider.dart';
+import '../providers/user_profile_provider.dart';
 
 class DocumentAnalysisScreen extends StatefulWidget {
   const DocumentAnalysisScreen({super.key});
@@ -42,7 +43,7 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
                       '📋 Supported Documents:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       '• Prescriptions\n'
                       '• Lab test results\n'
@@ -135,7 +136,7 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
                       child: Column(
                         children: [
                           CircularProgressIndicator(),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Text('Analyzing document...'),
                         ],
                       ),
@@ -182,7 +183,7 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
                 child: const Row(
                   children: [
                     Icon(Icons.info, color: Colors.orange, size: 20),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Results require professional interpretation. '
@@ -248,7 +249,9 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
     if (_selectedImage == null) return;
 
     final provider = context.read<MedicalDataProvider>();
-    await provider.analyzeDocument(_selectedImage!.path);
+    final profileProvider = context.read<UserProfileProvider>();
+    final userId = profileProvider.activeProfileId ?? 'default';
+    await provider.analyzeDocument(_selectedImage!.path, userId);
 
     if (mounted && provider.currentDocument != null) {
       Navigator.pushNamed(context, '/results');

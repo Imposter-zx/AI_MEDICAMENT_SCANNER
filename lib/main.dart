@@ -12,6 +12,8 @@ import 'providers/reminder_provider.dart';
 import 'screens/profile_screen.dart';
 import 'screens/trends_screen.dart';
 import 'screens/medication_search_screen.dart';
+import 'screens/chat_screen.dart';
+import 'screens/pharmacy_finder_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -57,6 +59,11 @@ class MyApp extends StatelessWidget {
           '/profile': (context) => const ProfileScreen(),
           '/trends': (context) => const TrendsScreen(),
           '/search': (context) => const MedicationSearchScreen(),
+          '/chat': (context) => const ChatScreen(),
+          '/pharmacy': (context) {
+            final args = ModalRoute.of(context)?.settings.arguments as String?;
+            return PharmacyFinderScreen(medicationName: args);
+          },
         },
       ),
     );

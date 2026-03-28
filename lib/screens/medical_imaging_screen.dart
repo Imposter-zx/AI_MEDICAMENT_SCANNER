@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/medical_data_provider.dart';
+import '../providers/user_profile_provider.dart';
 
 class MedicalImagingScreen extends StatefulWidget {
   const MedicalImagingScreen({super.key});
@@ -42,7 +43,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                     const Row(
                       children: [
                         Icon(Icons.warning, color: Colors.red, size: 24),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           '⚠️ Important',
                           style: TextStyle(
@@ -79,7 +80,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                       '📸 Supported Imaging Types:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       '• X-Ray (Chest, Skeletal)\n'
                       '• CT Scan\n'
@@ -172,7 +173,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                       child: Column(
                         children: [
                           CircularProgressIndicator(),
-                          SizedBox(height: 12),
+                          const SizedBox(height: 12),
                           Text('Analyzing medical image...'),
                         ],
                       ),
@@ -218,7 +219,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                 child: const Row(
                   children: [
                     Icon(Icons.info, color: Colors.orange, size: 20),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Always consult a radiologist for official interpretation.',
@@ -283,7 +284,9 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
     if (_selectedImage == null) return;
 
     final provider = context.read<MedicalDataProvider>();
-    await provider.analyzeMedicalImage(_selectedImage!.path);
+    final profileProvider = context.read<UserProfileProvider>();
+    final userId = profileProvider.activeProfileId ?? 'default';
+    await provider.analyzeMedicalImage(_selectedImage!.path, userId);
 
     if (mounted && provider.currentImagingResult != null) {
       Navigator.pushNamed(context, '/results');

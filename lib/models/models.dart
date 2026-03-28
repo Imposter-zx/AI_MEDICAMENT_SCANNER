@@ -196,6 +196,7 @@ class MedicalImagingResult {
 }
 class HistoryItem {
   final String id;
+  final String userId; // The ID of the profile this history belongs to
   final DateTime timestamp;
   final String type; // 'medication', 'document', 'imaging'
   final dynamic data;
@@ -203,6 +204,7 @@ class HistoryItem {
 
   HistoryItem({
     required this.id,
+    required this.userId,
     required this.timestamp,
     required this.type,
     required this.data,
@@ -212,6 +214,7 @@ class HistoryItem {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'userId': userId,
       'timestamp': timestamp.toIso8601String(),
       'type': type,
       'data': data.toMap(),
@@ -234,6 +237,7 @@ class HistoryItem {
 
     return HistoryItem(
       id: map['id'],
+      userId: map['userId'] ?? 'default',
       timestamp: DateTime.parse(map['timestamp']),
       type: type,
       data: data,
@@ -242,33 +246,45 @@ class HistoryItem {
   }
 }
 class UserProfile {
+  final String id;
   final String name;
   final int? age;
+  final String relation; // 'Self', 'Child', 'Parent', 'Other'
   final List<String> allergies;
   final List<String> medicalConditions;
+  final String? avatarUrl;
 
   UserProfile({
+    required this.id,
     required this.name,
     this.age,
+    this.relation = 'Self',
     required this.allergies,
     required this.medicalConditions,
+    this.avatarUrl,
   });
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'age': age,
+      'relation': relation,
       'allergies': allergies,
       'medicalConditions': medicalConditions,
+      'avatarUrl': avatarUrl,
     };
   }
 
   factory UserProfile.fromMap(Map<String, dynamic> map) {
     return UserProfile(
+      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       name: map['name'] ?? '',
       age: map['age'],
+      relation: map['relation'] ?? 'Self',
       allergies: List<String>.from(map['allergies'] ?? []),
       medicalConditions: List<String>.from(map['medicalConditions'] ?? []),
+      avatarUrl: map['avatarUrl'],
     );
   }
 }

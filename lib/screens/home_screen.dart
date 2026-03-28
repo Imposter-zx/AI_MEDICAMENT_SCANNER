@@ -96,7 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(child: _buildActionCard(context, Icons.manage_search, 'Search', '/search', Colors.green)),
                     ],
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 12),
+                  _buildProfileSwitcher(context),
+                  const SizedBox(height: 24),
+                  _buildSafetyAlerts(context),
+                  const SizedBox(height: 24),
                   _buildMedicationDashboard(context),
                   const SizedBox(height: 32),
                   Row(
@@ -131,13 +135,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, '/chat'),
+        label: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.auto_awesome),
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
     return Consumer<UserProfileProvider>(
       builder: (context, profileProvider, child) {
-        final profile = profileProvider.profile;
+        final profile = profileProvider.activeProfile;
         final name = profile?.name ?? "Guest";
         final hour = DateTime.now().hour;
         String greetingPrefix = "Good Morning";
@@ -198,6 +209,107 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildProfileSwitcher(BuildContext context) {
+    return Consumer<UserProfileProvider>(
+      builder: (context, profileProvider, child) {
+        final profiles = profileProvider.profiles;
+        final activeId = profileProvider.activeProfileId;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            const Text(
+              'Family Health Profiles',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: profiles.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == profiles.length) {
+                    return _buildAddProfileButton(context);
+                  }
+                  
+                  final profile = profiles[index];
+                  final isActive = profile.id == activeId;
+
+                  return GestureDetector(
+                    onTap: () => profileProvider.setActiveProfile(profile.id),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 16),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isActive ? Colors.blue : Colors.transparent,
+                                width: 2,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 28,
+                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              child: Text(
+                                profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: isActive ? Colors.blue : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            profile.relation == 'Self' ? 'Me' : profile.name,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              color: isActive ? Colors.blue : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildAddProfileButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/profile'),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(3),
+            child: CircleAvatar(
+              radius: 28,
+              backgroundColor: Colors.grey.withOpacity(0.1),
+              child: const Icon(Icons.add, color: Colors.grey, size: 28),
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Add New',
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildActionCard(BuildContext context, IconData icon, String title, String route, Color color) {
     return InkWell(
       onTap: () => Navigator.pushNamed(context, route),
@@ -253,13 +365,71 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildSafetyAlerts(BuildContext context) {
+    return Consumer<ReminderProvider>(
+      builder: (context, provider, _) {
+        if (provider.activeWarnings.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.red.withOpacity(0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.report_problem_rounded, color: Colors.red, size: 24),
+                  SizedBox(width: 12),
+                  Text(
+                    'Safety Alerts Detected',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              ...provider.activeWarnings.map((warning) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
+                    Expanded(child: Text(warning, style: const TextStyle(fontSize: 13, color: Colors.black87))),
+                  ],
+                ),
+              )).toList(),
+              const SizedBox(height: 4),
+              const Text(
+                'IMPORTANT: Please consult your doctor immediately regarding these combinations.',
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, color: Colors.red),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildMedicationDashboard(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Active Medications',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Active Medications',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            IconButton(
+              onPressed: () => Navigator.pushNamed(context, '/search'),
+              icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         Consumer<ReminderProvider>(
@@ -280,14 +450,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Icon(Icons.info_outline, color: Colors.blue),
                     SizedBox(width: 12),
-                    Expanded(child: Text('No active medications. Scan a medicine to set a reminder.')),
+                    Expanded(child: Text('No active medications tracked. Scan your medicines to add reminders.')),
                   ],
                 ),
               );
             }
 
             return SizedBox(
-              height: 140,
+              height: 160,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: activeReminders.length,
@@ -309,14 +479,33 @@ class _HomeScreenState extends State<HomeScreen> {
                      reminder.lastTaken!.day == now.day;
     }
 
+    // Calculate time to next dose (simplified)
+    final now = DateTime.now();
+    final todayDose = DateTime(now.year, now.month, now.day, reminder.time.hour, reminder.time.minute);
+    String timeAgo = "";
+    if (isTakenToday) {
+      timeAgo = "Completed for today";
+    } else {
+      if (todayDose.isBefore(now)) {
+        final diff = now.difference(todayDose);
+        timeAgo = "Due ${diff.inHours}h ${diff.inMinutes % 60}m ago";
+      } else {
+        final diff = todayDose.difference(now);
+        timeAgo = "Next in ${diff.inHours}h ${diff.inMinutes % 60}m";
+      }
+    }
+
     return Container(
-      width: 220,
+      width: 240,
       margin: const EdgeInsets.only(right: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isTakenToday ? Colors.green.withOpacity(0.3) : Colors.blue.withOpacity(0.3)),
+        color: isTakenToday ? Colors.green.withOpacity(0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isTakenToday ? Colors.green.withOpacity(0.3) : Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -327,29 +516,44 @@ class _HomeScreenState extends State<HomeScreen> {
               Expanded(
                 child: Text(
                   reminder.medicationName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.5),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(isTakenToday ? Icons.check_circle : Icons.access_time, 
-                   color: isTakenToday ? Colors.green : Colors.blue, size: 20),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(isTakenToday ? Icons.check : Icons.notifications_none_rounded, 
+                     color: isTakenToday ? Colors.green : Colors.blue, size: 16),
+              ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text('${reminder.dosage} • ${reminder.time.format(context)}', 
-               style: const TextStyle(fontSize: 12, color: Colors.grey)),
+               style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+          const SizedBox(height: 4),
+          Text(timeAgo, style: TextStyle(fontSize: 11, color: isTakenToday ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
           const Spacer(),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: isTakenToday ? null : () => provider.markAsTaken(reminder.id),
+              onPressed: isTakenToday ? null : () {
+                provider.markAsTaken(reminder.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Marked ${reminder.medicationName} as taken!'), backgroundColor: Colors.green),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: Text(isTakenToday ? 'Taken' : 'Mark Taken'),
+              child: Text(isTakenToday ? 'Taken' : 'Mark Taken', style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -391,9 +595,14 @@ class HistoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<MedicalDataProvider>(
-      builder: (context, provider, child) {
-        if (provider.history.isEmpty) {
+    return Consumer2<MedicalDataProvider, UserProfileProvider>(
+      builder: (context, provider, profileProvider, child) {
+        final activeId = profileProvider.activeProfileId;
+        final filteredHistory = provider.history
+            .where((item) => item.userId == activeId)
+            .toList();
+
+        if (filteredHistory.isEmpty) {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -411,10 +620,10 @@ class HistoryList extends StatelessWidget {
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: provider.history.length > 5 ? 5 : provider.history.length,
+          itemCount: filteredHistory.length > 5 ? 5 : filteredHistory.length,
           separatorBuilder: (context, index) => const Divider(height: 1),
           itemBuilder: (context, index) {
-            final item = provider.history[index];
+            final item = filteredHistory[index];
             return ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Container(

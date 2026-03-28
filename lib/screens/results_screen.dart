@@ -19,28 +19,26 @@ class ResultsScreen extends StatelessWidget {
         builder: (context, provider, profileProvider, child) {
           Widget content;
           String title = "Analysis Results";
-          IconData icon = Icons.bar_chart;
-
           if (provider.currentMedication != null) {
             content = _buildMedicationResult(context, provider, profileProvider);
             title = "Medication Info";
-            icon = Icons.medication;
           } else if (provider.currentDocument != null) {
             content = _buildDocumentResult(context, provider);
             title = "Document Analysis";
-            icon = Icons.description;
           } else if (provider.currentImagingResult != null) {
             content = _buildImagingResult(context, provider);
             title = "Imaging Insights";
-            icon = Icons.biotech;
           } else {
             content = const Center(child: Text('No results to display'));
           }
-// ... (omitting middle part of build method for brevity)
+
           return CustomScrollView(
             slivers: [
               SliverAppBar.large(
-                leading: Icon(icon),
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () => Navigator.pop(context),
+                ),
                 title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                 centerTitle: true,
                 actions: [
@@ -51,7 +49,7 @@ class ResultsScreen extends StatelessWidget {
                       if (provider.currentMedication != null) {
                         ReportService().generateAndShareReport(
                           provider.currentMedication!, 
-                          profileProvider.profile
+                          profileProvider.activeProfile
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -75,8 +73,8 @@ class ResultsScreen extends StatelessWidget {
     final med = provider.currentMedication!;
     List<String> safetyConflicts = [];
     
-    if (profileProvider.profile != null) {
-      safetyConflicts = MedicalAnalyzerService().checkSafetyConflicts(med, profileProvider.profile!);
+    if (profileProvider.activeProfile != null) {
+      safetyConflicts = MedicalAnalyzerService().checkSafetyConflicts(med, profileProvider.activeProfile!);
     }
 
     final reminderProvider = context.watch<ReminderProvider>();
@@ -112,6 +110,9 @@ class ResultsScreen extends StatelessWidget {
           ),
           
           const SizedBox(height: 24),
+          _buildActionButtons(context, med),
+          const SizedBox(height: 32),
+          
           _buildInfoSection(context, 'Indications', med.usedFor, Icons.medication),
           _buildInfoSection(context, 'Usage', med.whenToUse, Icons.access_time),
           _buildDangerSection(context, 'Contraindications', med.contraindications),
@@ -135,15 +136,6 @@ class ResultsScreen extends StatelessWidget {
             Colors.purple,
           ),
           
-          const SizedBox(height: 16),
-          _buildActionButton(
-            context,
-            'Set Reminder',
-            Icons.notification_add,
-            Colors.teal,
-            () => _showSetReminderDialog(context, med),
-          ),
-          
           if (med.requiresPrescription)
             _buildWarningBanner(context, 'Prescription Required', 'This medication must only be used under professional medical supervision.'),
           
@@ -151,6 +143,41 @@ class ResultsScreen extends StatelessWidget {
           _buildDisclaimerCard(context),
         ],
       ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, Medication med) {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => _showSetReminderDialog(context, med),
+            icon: const Icon(Icons.alarm_add),
+            label: const Text('Set Reminder'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () {
+              Navigator.pushNamed(context, '/pharmacy', arguments: med.name);
+            },
+            icon: const Icon(Icons.local_pharmacy_outlined),
+            label: const Text('Find Pharmacy'),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              side: const BorderSide(color: Colors.blue),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -224,63 +251,89 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  // ==================== UI Components ====================
-
   Widget _buildSafetyConflictCard(BuildContext context, List<String> conflicts) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withOpacity(0.3), width: 2),
+        color: Colors.red.shade50.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.red.shade300, width: 2),
+        boxShadow: [
+          BoxShadow(color: Colors.red.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 8)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
-              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
-              SizedBox(width: 12),
-              Text(
-                'PERSONAL REACTION WARNING',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  letterSpacing: 1.2,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                child: const Icon(Icons.privacy_tip, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'HIGH-PRIORITY SAFETY ALERT',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    letterSpacing: 1.5,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          ...conflicts.map((conflict) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.close, color: Colors.red, size: 18),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    conflict,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+          Divider(height: 32, thickness: 1, color: Colors.red.shade200),
+          ...conflicts.map((conflict) {
+            final isAllergy = conflict.toLowerCase().contains('allergy');
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    isAllergy ? Icons.science_outlined : Icons.health_and_safety_outlined,
+                    color: Colors.red.shade900,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      conflict,
+                      style: TextStyle(
+                        color: Colors.red.shade900,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        height: 1.4,
+                      ),
                     ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 14, color: Colors.red.shade900),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'This is matched against your active health profile.',
+                    style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
-            ),
-          )),
-          const SizedBox(height: 8),
-          const Text(
-            'Important: This is based on your profile health context.',
-            style: TextStyle(
-              color: Colors.red,
-              fontSize: 11,
-              fontStyle: FontStyle.italic,
             ),
           ),
         ],
@@ -550,23 +603,6 @@ class ResultsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 11, color: Colors.grey),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onPressed) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon),
-        label: Text(label),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
       ),
     );
   }

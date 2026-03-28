@@ -20,7 +20,6 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
 
   void _onSearchChanged(String query) {
     setState(() {
-      _searchQuery = query;
       if (query.isEmpty) {
         _filteredMeds = medications.values.toList();
       } else {
