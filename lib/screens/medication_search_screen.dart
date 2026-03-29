@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/EXTENDED_MEDICATIONS_DATABASE.dart';
 import '../models/models.dart';
+import '../widgets/premium_widgets.dart';
 
 class MedicationSearchScreen extends StatefulWidget {
   const MedicationSearchScreen({super.key});
@@ -72,41 +73,31 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
   }
 
   Widget _buildMedCard(Medication med) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(Icons.medication, color: Colors.blue),
-        ),
-        title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(med.activeIngredient ?? 'Unknown active ingredient', style: const TextStyle(fontSize: 12)),
-            const SizedBox(height: 4),
-            Wrap(
-              spacing: 4,
-              children: med.usedFor.take(2).map((use) => Chip(
-                label: Text(use, style: const TextStyle(fontSize: 10)),
-                padding: EdgeInsets.zero,
-                visualDensity: VisualDensity.compact,
-              )).toList(),
+    return GlassCard(
+      onTap: () => _showMedDetails(med),
+      height: 100,
+      padding: EdgeInsets.zero,
+      child: Center(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+          leading: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
+            child: Icon(Icons.medication, color: Theme.of(context).colorScheme.primary),
+          ),
+          title: Text(med.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+          subtitle: Text(
+            med.activeIngredient ?? 'Unknown active ingredient',
+            style: const TextStyle(fontSize: 12),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const Icon(Icons.chevron_right),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          // Show details or set reminder
-          _showMedDetails(med);
-        },
       ),
     );
   }
@@ -142,13 +133,12 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
               _buildInfoSection('Safe Dosage', med.dosage ?? 'Consult your doctor'),
               _buildInfoSection('Common Side Effects', med.sideEffects.join(', ')),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              SizedBox(
+                width: double.infinity,
+                child: GradientButton(
+                  text: 'Close',
+                  onPressed: () => Navigator.pop(context),
                 ),
-                child: const Text('Close'),
               ),
             ],
           ),

@@ -35,19 +35,92 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2196F3),
+            seedColor: const Color(0xFF1E3A8A), // Deep Blue
+            primary: const Color(0xFF2563EB),
+            secondary: const Color(0xFF0D9488), // Teal
+            surface: const Color(0xFFF8FAFC),
+            background: const Color(0xFFF1F5F9),
             brightness: Brightness.light,
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.outfitTextTheme(),
+          textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
+            bodyColor: const Color(0xFF0F172A),
+            displayColor: const Color(0xFF0F172A),
+          ),
+          cardTheme: CardTheme(
+            elevation: 8,
+            shadowColor: const Color(0xFF2563EB).withOpacity(0.1),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            clipBehavior: Clip.antiAlias,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: Colors.white,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: Colors.grey.shade200),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+            ),
+          ),
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2196F3),
+            seedColor: const Color(0xFF3B82F6),
+            primary: const Color(0xFF3B82F6),
+            secondary: const Color(0xFF14B8A6),
+            surface: const Color(0xFF1E293B),
+            background: const Color(0xFF0F172A),
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
-          textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+          textTheme: GoogleFonts.plusJakartaSansTextTheme(ThemeData.dark().textTheme).apply(
+            bodyColor: const Color(0xFFF8FAFC),
+            displayColor: const Color(0xFFF8FAFC),
+          ),
+          cardTheme: CardTheme(
+            elevation: 8,
+            shadowColor: Colors.black26,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            clipBehavior: Clip.antiAlias,
+            color: const Color(0xFF1E293B),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: const Color(0xFF1E293B),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF334155)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+            ),
+          ),
         ),
         themeMode: ThemeMode.system,
         home: const HomeScreen(),

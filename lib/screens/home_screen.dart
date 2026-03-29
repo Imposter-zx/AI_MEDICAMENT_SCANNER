@@ -6,6 +6,7 @@ import '../providers/user_profile_provider.dart';
 import '../providers/reminder_provider.dart';
 import '../models/reminder_model.dart';
 import '../models/models.dart';
+import '../widgets/premium_widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -311,56 +312,39 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActionCard(BuildContext context, IconData icon, String title, String route, Color color) {
-    return InkWell(
+    return GlassCard(
       onTap: () => Navigator.pushNamed(context, route),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+      height: 90,
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSmallFeatureCard(BuildContext context, String assetPath, String title, String route) {
-    return InkWell(
+    return GlassCard(
       onTap: () => Navigator.pushNamed(context, route),
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Column(
-          children: [
-            Image.asset(assetPath, height: 28, width: 28),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+      height: 90,
+      child: Column(
+        children: [
+          Image.asset(assetPath, height: 28, width: 28),
+          const Spacer(),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+          ),
+        ],
       ),
     );
   }
@@ -497,66 +481,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       width: 240,
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isTakenToday ? Colors.green.withOpacity(0.05) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: isTakenToday ? Colors.green.withOpacity(0.3) : Colors.grey.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  reminder.medicationName,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.5),
-                  overflow: TextOverflow.ellipsis,
+      margin: const EdgeInsets.only(right: 16, bottom: 8),
+      child: GlassCard(
+        padding: const EdgeInsets.all(16),
+        height: 160,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    reminder.medicationName,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.5),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
-                  shape: BoxShape.circle,
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(isTakenToday ? Icons.check : Icons.notifications_none_rounded, 
+                       color: isTakenToday ? Colors.green : Colors.blue, size: 16),
                 ),
-                child: Icon(isTakenToday ? Icons.check : Icons.notifications_none_rounded, 
-                     color: isTakenToday ? Colors.green : Colors.blue, size: 16),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text('${reminder.dosage} • ${reminder.time.format(context)}', 
-               style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
-          const SizedBox(height: 4),
-          Text(timeAgo, style: TextStyle(fontSize: 11, color: isTakenToday ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
-          const Spacer(),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: isTakenToday ? null : () {
-                provider.markAsTaken(reminder.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Marked ${reminder.medicationName} as taken!'), backgroundColor: Colors.green),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(isTakenToday ? 'Taken' : 'Mark Taken', style: const TextStyle(fontWeight: FontWeight.bold)),
+              ],
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text('${reminder.dosage} • ${reminder.time.format(context)}', 
+                 style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+            const SizedBox(height: 4),
+            Text(timeAgo, style: TextStyle(fontSize: 11, color: isTakenToday ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: isTakenToday ? ElevatedButton(
+                onPressed: null,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text('Taken', style: TextStyle(fontWeight: FontWeight.bold)),
+              ) : GradientButton(
+                text: 'Mark Taken',
+                onPressed: () {
+                  provider.markAsTaken(reminder.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Marked ${reminder.medicationName} as taken!'), backgroundColor: Colors.green),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

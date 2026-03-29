@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../widgets/premium_widgets.dart';
 
 class DocumentAnalysisScreen extends StatefulWidget {
   const DocumentAnalysisScreen({super.key});
@@ -30,27 +31,23 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Instructions
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Column(
+              const GlassCard(
+                height: 140,
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       '📋 Supported Documents:',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       '• Prescriptions\n'
                       '• Lab test results\n'
                       '• Medical reports\n'
                       '• Blood work results\n'
                       '• Other medical documents',
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 13),
                     ),
                   ],
                 ),
@@ -101,16 +98,13 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
                   children: [
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
+                      child: GradientButton(
+                        text: 'Analyze Document',
+                        icon: Icons.analytics,
                         onPressed: _analyzeDocument,
-                        icon: const Icon(Icons.analytics),
-                        label: const Text('Analyze Document'),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
