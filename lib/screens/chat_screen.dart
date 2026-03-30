@@ -139,7 +139,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildHealthDisclaimer() {
     return Container(
       width: double.infinity,
-      color: Colors.orange.withOpacity(0.1),
+      color: Colors.orange.withValues(alpha: 0.1),
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: const Row(
         children: [
@@ -172,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomRight: Radius.circular(isUser ? 0 : 16),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2)),
+            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2)),
           ],
         ),
         child: Text(
@@ -207,8 +207,8 @@ class _ChatScreenState extends State<ChatScreen> {
             child: ActionChip(
               label: Text(prompts[index], style: const TextStyle(fontSize: 12)),
               onPressed: () => _sendPrompt(prompts[index].substring(3)),
-              backgroundColor: Colors.blue.withOpacity(0.05),
-              side: BorderSide(color: Colors.blue.withOpacity(0.1)),
+              backgroundColor: Colors.blue.withValues(alpha: 0.05),
+              side: BorderSide(color: Colors.blue.withValues(alpha: 0.1)),
             ),
           );
         },
@@ -221,7 +221,7 @@ class _ChatScreenState extends State<ChatScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
-        border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1))),
       ),
       child: SafeArea(
         child: Row(

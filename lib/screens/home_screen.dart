@@ -170,14 +170,14 @@ class _HomeScreenState extends State<HomeScreen> {
               fit: BoxFit.cover,
             ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
             ],
           ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
-                colors: [Colors.black.withOpacity(0.6), Colors.transparent],
+                colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
               ),
@@ -202,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 8),
                     Text(
                       profile != null ? 'Health Profile Active' : 'Set up your health profile',
-                      style: TextStyle(fontSize: 13, color: Colors.white.withOpacity(0.9), letterSpacing: 0.5),
+                      style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), letterSpacing: 0.5),
                     ),
                   ],
                 ),
@@ -259,7 +259,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: CircleAvatar(
                               radius: 28,
-                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              backgroundColor: Colors.blue.withValues(alpha: 0.1),
                               child: Text(
                                 profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
                                 style: TextStyle(
@@ -301,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.all(3),
             child: CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.grey.withOpacity(0.1),
+              backgroundColor: Colors.grey.withValues(alpha: 0.1),
               child: const Icon(Icons.add, color: Colors.grey, size: 28),
             ),
           ),
@@ -372,9 +372,9 @@ class _HomeScreenState extends State<HomeScreen> {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
+            color: Colors.red.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
+            border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(child: Text(warning, style: const TextStyle(fontSize: 13, color: Colors.black87))),
                   ],
                 ),
-              )).toList(),
+              )),
               const SizedBox(height: 4),
               const Text(
                 'IMPORTANT: Please consult your doctor immediately regarding these combinations.',
@@ -440,9 +440,9 @@ class _HomeScreenState extends State<HomeScreen> {
               return Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.05),
+                  color: Colors.blue.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.blue.withOpacity(0.1)),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.1)),
                 ),
                 child: const Row(
                   children: [
@@ -515,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: isTakenToday ? Colors.green.withOpacity(0.1) : Colors.blue.withOpacity(0.1),
+                    color: isTakenToday ? Colors.green.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(isTakenToday ? Icons.check : Icons.notifications_none_rounded, 
@@ -558,9 +558,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.05),
+        color: Colors.red.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2)),
       ),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,7 +601,7 @@ class HistoryList extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  Icon(Icons.history, size: 48, color: Colors.grey.withOpacity(0.5)),
+                  Icon(Icons.history, size: 48, color: Colors.grey.withValues(alpha: 0.5)),
                   const SizedBox(height: 12),
                   const Text('No recent analyses found.\nScan something to get started!', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
                 ],
@@ -623,7 +623,7 @@ class HistoryList extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: _getTypeColor(item.type).withOpacity(0.1),
+                  color: _getTypeColor(item.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Center(child: Icon(_getTypeIcon(item.type), color: _getTypeColor(item.type))),

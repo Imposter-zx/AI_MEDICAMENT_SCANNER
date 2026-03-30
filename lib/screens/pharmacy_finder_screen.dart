@@ -59,12 +59,12 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
     return Container(
       height: 220,
       width: double.infinity,
-      color: Colors.blue.withOpacity(0.1),
+      color: Colors.blue.withValues(alpha: 0.1),
       child: Stack(
         children: [
           // Mock Map Background
           Center(
-            child: Icon(Icons.map_outlined, size: 60, color: Colors.blue.withOpacity(0.3)),
+            child: Icon(Icons.map_outlined, size: 60, color: Colors.blue.withValues(alpha: 0.3)),
           ),
           ..._pharmacies.take(3).map((p) {
              final index = _pharmacies.indexOf(p);
@@ -87,7 +87,7 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
                  ],
                ),
              );
-          }).toList(),
+          }),
           Positioned(
             bottom: 16,
             right: 16,
@@ -216,9 +216,9 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         label,

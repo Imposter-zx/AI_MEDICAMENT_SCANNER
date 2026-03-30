@@ -40,10 +40,10 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(Icons.warning, color: Colors.red, size: 24),
-                        const SizedBox(width: 8),
+                        SizedBox(width: 8),
                         Text(
                           '⚠️ Important',
                           style: TextStyle(
@@ -54,7 +54,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     const Text(
                       'Medical imaging analysis requires professional radiologist interpretation. '
                       'This tool provides educational guidance only. Never rely on these results '
@@ -80,7 +80,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                       '📸 Supported Imaging Types:',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     Text(
                       '• X-Ray (Chest, Skeletal)\n'
                       '• CT Scan\n'
@@ -118,7 +118,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                               size: 48,
                               color: Colors.grey.shade400,
                             ),
-                            const SizedBox(height: 12),
+                            SizedBox(height: 12),
                             Text(
                               'Tap to upload medical image',
                               style: TextStyle(
@@ -147,7 +147,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -173,7 +173,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                       child: Column(
                         children: [
                           CircularProgressIndicator(),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           Text('Analyzing medical image...'),
                         ],
                       ),
@@ -198,7 +198,7 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                               color: Colors.red,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Text(provider.errorMessage!),
                         ],
                       ),
@@ -216,10 +216,10 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                   color: Colors.orange.shade50,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.info, color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Always consult a radiologist for official interpretation.',

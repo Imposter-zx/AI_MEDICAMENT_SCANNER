@@ -5,7 +5,6 @@ import '../providers/user_profile_provider.dart';
 import '../providers/reminder_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/backup_service.dart';
-import '../widgets/premium_widgets.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -229,7 +228,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () async {
               try {
-                final path = await BackupService().exportAndShare();
+                await BackupService().exportAndShare();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Backup exported successfully!'), backgroundColor: Colors.green),

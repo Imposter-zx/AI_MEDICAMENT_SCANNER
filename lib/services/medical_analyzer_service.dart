@@ -127,13 +127,21 @@ class MedicalAnalyzerService {
     String type = 'X-Ray';
     String bodyPart = 'Chest';
     
-    if (fileName.contains('mri')) type = 'MRI';
-    else if (fileName.contains('ct')) type = 'CT Scan';
-    else if (fileName.contains('ultrasound')) type = 'Ultrasound';
+    if (fileName.contains('mri')) {
+      type = 'MRI';
+    } else if (fileName.contains('ct')) {
+      type = 'CT Scan';
+    } else if (fileName.contains('ultrasound')) {
+      type = 'Ultrasound';
+    }
 
-    if (fileName.contains('head') || fileName.contains('brain')) bodyPart = 'Head/Brain';
-    else if (fileName.contains('knee')) bodyPart = 'Knee';
-    else if (fileName.contains('spine')) bodyPart = 'Spine';
+    if (fileName.contains('head') || fileName.contains('brain')) {
+      bodyPart = 'Head/Brain';
+    } else if (fileName.contains('knee')) {
+      bodyPart = 'Knee';
+    } else if (fileName.contains('spine')) {
+      bodyPart = 'Spine';
+    }
 
     return MedicalImagingResult(
       imagingType: type,

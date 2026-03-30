@@ -282,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           label: Text(s, style: const TextStyle(fontSize: 12)),
           selected: isSelected,
           onSelected: isSelected ? null : (selected) => onSelected(s),
-          selectedColor: Colors.blue.withOpacity(0.2),
+          selectedColor: Colors.blue.withValues(alpha: 0.2),
           checkmarkColor: Colors.blue,
         );
       }).toList(),

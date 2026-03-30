@@ -174,10 +174,10 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: Colors.orange.shade300),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
                     Icon(Icons.info, color: Colors.orange, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         'Results require professional interpretation. '
