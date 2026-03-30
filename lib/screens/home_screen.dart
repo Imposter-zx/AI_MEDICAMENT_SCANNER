@@ -64,6 +64,10 @@ class _HomeScreenState extends State<HomeScreen> {
         elevation: 2,
         actions: [
           IconButton(
+            onPressed: () => Navigator.pushNamed(context, '/settings'),
+            icon: const Icon(Icons.settings_outlined),
+          ),
+          IconButton(
             onPressed: () => Navigator.pushNamed(context, '/profile'),
             icon: const Icon(Icons.account_circle_outlined),
           ),
@@ -314,16 +318,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActionCard(BuildContext context, IconData icon, String title, String route, Color color) {
     return GlassCard(
       onTap: () => Navigator.pushNamed(context, route),
-      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       height: 90,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: color, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
+            ),
           ),
         ],
       ),
@@ -333,16 +342,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildSmallFeatureCard(BuildContext context, String assetPath, String title, String route) {
     return GlassCard(
       onTap: () => Navigator.pushNamed(context, route),
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
       height: 90,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(assetPath, height: 28, width: 28),
-          const Spacer(),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+          Image.asset(assetPath, height: 24, width: 24),
+          const SizedBox(height: 4),
+          Flexible(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+            ),
           ),
         ],
       ),

@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../services/medical_analyzer_service.dart';
 import '../services/ocr_service.dart';
+import '../services/storage_service.dart';
 
 class MedicalDataProvider with ChangeNotifier {
   final MedicalAnalyzerService _analyzerService = MedicalAnalyzerService();
   final OCRService _ocrService = OCRService();
+  final StorageService _storage = StorageService();
 
   Medication? currentMedication;
   MedicalDocument? currentDocument;
@@ -24,8 +25,7 @@ class MedicalDataProvider with ChangeNotifier {
 
   Future<void> _loadHistory() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final historyJson = prefs.getStringList('analysis_history') ?? [];
+      final historyJson = await _storage.getHistory();
       history = historyJson
           .map((item) => HistoryItem.fromMap(json.decode(item)))
           .toList()
@@ -39,11 +39,10 @@ class MedicalDataProvider with ChangeNotifier {
   Future<void> _saveHistoryItem(HistoryItem item) async {
     try {
       history.insert(0, item);
-      if (history.length > 20) history.removeLast(); // Keep last 20
+      if (history.length > 20) history.removeLast();
 
-      final prefs = await SharedPreferences.getInstance();
       final historyJson = history.map((item) => json.encode(item.toMap())).toList();
-      await prefs.setStringList('analysis_history', historyJson);
+      await _storage.setHistory(historyJson);
       notifyListeners();
     } catch (e) {
       debugPrint("Error saving history: $e");

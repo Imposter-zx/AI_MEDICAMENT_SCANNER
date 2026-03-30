@@ -1,16 +1,17 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/reminder_model.dart';
 import '../models/models.dart';
 import '../services/notification_service.dart';
 import '../services/medical_analyzer_service.dart';
+import '../services/storage_service.dart';
 
 class ReminderProvider with ChangeNotifier {
+  final StorageService _storage = StorageService();
   List<MedicationReminder> _reminders = [];
   bool _isLoading = true;
   List<String> _activeWarnings = [];
-  
+
   final NotificationService _notificationService = NotificationService();
   final MedicalAnalyzerService _analyzerService = MedicalAnalyzerService();
 
@@ -19,10 +20,10 @@ class ReminderProvider with ChangeNotifier {
   List<String> get activeWarnings => _activeWarnings;
 
   ReminderProvider() {
-    _init();
+    init();
   }
 
-  Future<void> _init() async {
+  Future<void> init() async {
     await _notificationService.init();
     await _loadReminders();
     _checkAllInteractions();
@@ -32,9 +33,8 @@ class ReminderProvider with ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final prefs = await SharedPreferences.getInstance();
-    final remindersJson = prefs.getStringList('medication_reminders') ?? [];
-    
+    final remindersJson = await _storage.getReminders();
+
     _reminders = remindersJson
         .map((item) => MedicationReminder.fromMap(json.decode(item)))
         .toList();
@@ -135,10 +135,18 @@ class ReminderProvider with ChangeNotifier {
   }
 
   Future<void> _saveReminders() async {
-    final prefs = await SharedPreferences.getInstance();
     final remindersJson = _reminders
         .map((item) => json.encode(item.toMap()))
         .toList();
-    await prefs.setStringList('medication_reminders', remindersJson);
+    await _storage.setReminders(remindersJson);
+  }
+
+  void clearAll() {
+    for (var r in _reminders) {
+      _notificationService.cancelReminder(r.id.hashCode);
+    }
+    _reminders = [];
+    _activeWarnings = [];
+    notifyListeners();
   }
 }

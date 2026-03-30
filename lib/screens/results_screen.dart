@@ -8,9 +8,38 @@ import '../services/medical_analyzer_service.dart';
 import '../services/report_service.dart';
 import '../providers/reminder_provider.dart';
 import '../models/reminder_model.dart';
+import 'package:share_plus/share_plus.dart';
 
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
+
+  String _getShareSummary(MedicalDataProvider provider) {
+    if (provider.currentMedication != null) {
+      final med = provider.currentMedication!;
+      return 'AI Medicament Scanner Results\n\n'
+          'Medication: ${med.name}\n'
+          'Active Ingredient: ${med.activeIngredient ?? "N/A"}\n'
+          'Used For: ${med.usedFor.join(", ")}\n'
+          'Dosage: ${med.dosage ?? "See package"}\n'
+          'Side Effects: ${med.sideEffects.join(", ")}\n\n'
+          'Disclaimer: For educational purposes only. Consult your doctor.';
+    } else if (provider.currentDocument != null) {
+      final doc = provider.currentDocument!;
+      return 'AI Medicament Scanner Results\n\n'
+          'Document Type: ${doc.documentType}\n'
+          'Key Findings: ${doc.keyFindings.length} identified\n'
+          'Abnormal Values: ${doc.abnormalValues.length} detected\n\n'
+          'Disclaimer: For educational purposes only. Consult your doctor.';
+    } else if (provider.currentImagingResult != null) {
+      final img = provider.currentImagingResult!;
+      return 'AI Medicament Scanner Results\n\n'
+          'Imaging Type: ${img.imagingType}\n'
+          'Body Part: ${img.bodyPart}\n'
+          'Areas of Interest: ${img.areasOfInterest.join(", ")}\n\n'
+          'Disclaimer: For educational purposes only. Consult your doctor.';
+    }
+    return '';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +71,16 @@ class ResultsScreen extends StatelessWidget {
                 title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
                 centerTitle: true,
                 actions: [
+                  IconButton(
+                    icon: const Icon(Icons.share),
+                    tooltip: 'Share',
+                    onPressed: () {
+                      final summary = _getShareSummary(provider);
+                      if (summary.isNotEmpty) {
+                        Share.share(summary, subject: 'AI Medicament Scanner - Results');
+                      }
+                    },
+                  ),
                   IconButton(
                     icon: const Icon(Icons.picture_as_pdf),
                     tooltip: 'Export Report',

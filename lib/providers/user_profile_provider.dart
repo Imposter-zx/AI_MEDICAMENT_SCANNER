@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
+import '../services/storage_service.dart';
 
 class UserProfileProvider with ChangeNotifier {
+  final StorageService _storage = StorageService();
   List<UserProfile> _profiles = [];
   String? _activeProfileId;
   bool _isLoaded = false;
@@ -23,26 +24,16 @@ class UserProfileProvider with ChangeNotifier {
 
   Future<void> loadProfiles() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final profilesJson = prefs.getStringList('user_profiles');
-      
-      if (profilesJson != null && profilesJson.isNotEmpty) {
+      await _storage.migrateIfNeeded();
+      final profilesJson = await _storage.getProfiles();
+
+      if (profilesJson.isNotEmpty) {
         _profiles = profilesJson
             .map((p) => UserProfile.fromMap(json.decode(p)))
             .toList();
-        _activeProfileId = prefs.getString('active_profile_id') ?? _profiles.first.id;
-      } else {
-        // Migration/Initial: Create default profile if none exists
-        final oldProfileJson = prefs.getString('user_profile');
-        if (oldProfileJson != null) {
-          final oldProfile = UserProfile.fromMap(json.decode(oldProfileJson));
-          _profiles = [oldProfile];
-          _activeProfileId = oldProfile.id;
-          await saveProfiles();
-          await prefs.remove('user_profile'); // Clean up old key
-        }
+        _activeProfileId = await _storage.getActiveProfileId() ?? _profiles.first.id;
       }
-      
+
       _isLoaded = true;
       notifyListeners();
     } catch (e) {
@@ -54,11 +45,10 @@ class UserProfileProvider with ChangeNotifier {
 
   Future<void> saveProfiles() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
       final profilesJson = _profiles.map((p) => json.encode(p.toMap())).toList();
-      await prefs.setStringList('user_profiles', profilesJson);
+      await _storage.setProfiles(profilesJson);
       if (_activeProfileId != null) {
-        await prefs.setString('active_profile_id', _activeProfileId!);
+        await _storage.setActiveProfileId(_activeProfileId!);
       }
     } catch (e) {
       debugPrint("Error saving profiles: $e");
@@ -68,10 +58,15 @@ class UserProfileProvider with ChangeNotifier {
   Future<void> setActiveProfile(String id) async {
     if (_profiles.any((p) => p.id == id)) {
       _activeProfileId = id;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('active_profile_id', id);
+      await _storage.setActiveProfileId(id);
       notifyListeners();
     }
+  }
+
+  void clearAll() {
+    _profiles = [];
+    _activeProfileId = null;
+    notifyListeners();
   }
 
   Future<void> addProfile(UserProfile profile) async {
