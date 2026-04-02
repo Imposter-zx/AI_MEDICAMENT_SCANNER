@@ -27,17 +27,17 @@ class Pharmacy {
 }
 
 class PharmacyService {
-  Future<List<Pharmacy>> getNearbyPharmacies(String medicationName) async {
+  Future<List<Pharmacy>> getNearbyPharmacies(String medicationName, {double? lat, double? lng}) async {
     // Attempt real API first if key is provided
     try {
       final prefs = await SharedPreferences.getInstance();
       final apiKey = prefs.getString('places_api_key');
       if (apiKey != null && apiKey.isNotEmpty) {
         final api = PharmacyApiService(apiKey);
-        // Hard-coded current location as placeholder; replace with real GPS later
-        final lat = 40.7128;
-        final lng = -74.0060;
-        final results = await api.searchNearby(lat: lat, lng: lng);
+        // Use provided coordinates if available, otherwise fall back to a default
+        final double latVal = lat ?? 40.7128;
+        final double lngVal = lng ?? -74.0060;
+        final results = await api.searchNearby(lat: latVal, lng: lngVal);
         if (results.isNotEmpty) return results;
       }
     } catch (_) {
