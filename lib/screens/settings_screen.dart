@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/user_profile_provider.dart';
+import '../services/openai_chat_service.dart';
+import 'package:geolocator/geolocator.dart';
 import '../providers/reminder_provider.dart';
 import '../services/analytics_service.dart';
 import '../services/backup_service.dart';
@@ -18,11 +20,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _analyticsEnabled = false;
   String _selectedLanguage = 'en';
+  final TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _placesApiKeyController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _loadApiKey();
+    _loadPlacesApiKey();
+  }
+
+  Future<void> _loadApiKey() async {
+    final key = await OpenAIChatService().getApiKey();
+    setState(() {
+      _apiKeyController.text = key ?? '';
+    });
+  }
+
+  Future<void> _saveApiKey() async {
+    final key = _apiKeyController.text.trim();
+    if (key.isNotEmpty) {
+      await OpenAIChatService().setApiKey(key);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OpenAI API Key saved')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadPlacesApiKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _placesApiKeyController.text = prefs.getString('places_api_key') ?? '';
+    });
+  }
+
+  Future<void> _savePlacesApiKey() async {
+    final key = _placesApiKeyController.text.trim();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('places_api_key', key);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Places API Key saved')),
+      );
+    }
   }
 
   Future<void> _loadSettings() async {
@@ -87,6 +130,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 8),
             _buildAnalyticsSummary(),
           ],
+          // Places API Key for real pharmacy search
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Places API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _placesApiKeyController,
+                    decoration: const InputDecoration(hintText: 'Enter Google Places API Key'),
+                  ),
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: _savePlacesApiKey,
+                      child: const Text('Save Places API Key'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // OpenAI API Key management
+          const SizedBox(height: 12),
+          Card(
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('OpenAI API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  TextField(
+                    controller: _apiKeyController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      hintText: 'Enter OpenAI API Key',
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: _saveApiKey,
+                      child: Text('Save API Key'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
           _buildSectionTitle('About'),
           _buildAboutSection(),

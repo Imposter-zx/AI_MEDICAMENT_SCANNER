@@ -1,4 +1,6 @@
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'pharmacy_api_service.dart';
 
 class Pharmacy {
   final String id;
@@ -26,9 +28,24 @@ class Pharmacy {
 
 class PharmacyService {
   Future<List<Pharmacy>> getNearbyPharmacies(String medicationName) async {
+    // Attempt real API first if key is provided
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final apiKey = prefs.getString('places_api_key');
+      if (apiKey != null && apiKey.isNotEmpty) {
+        final api = PharmacyApiService(apiKey);
+        // Hard-coded current location as placeholder; replace with real GPS later
+        final lat = 40.7128;
+        final lng = -74.0060;
+        final results = await api.searchNearby(lat: lat, lng: lng);
+        if (results.isNotEmpty) return results;
+      }
+    } catch (_) {
+      // Fall back to mock data on error
+    }
+    // Mock data fallback
     // Simulating API call delay
     await Future.delayed(const Duration(seconds: 1));
-
     // Mock data
     final random = Random();
     return [

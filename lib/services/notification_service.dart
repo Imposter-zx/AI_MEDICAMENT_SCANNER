@@ -45,48 +45,38 @@ class NotificationService {
     required int minute,
     required List<int> daysOfWeek,
   }) async {
-    // For simplicity in this phase, we schedule for the next occurrence
-    // A more robust implementation would schedule recurring notifications
-    
+    // Schedule recurring reminders for each specified weekday
     final now = tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
+    for (final d in daysOfWeek) {
+      // Build next date for given weekday at the specified time
+      int daysUntil = (d - now.weekday) % 7;
+      if (daysUntil < 0) daysUntil += 7;
+      tz.TZDateTime scheduledDate = tz.TZDateTime.local(now.year, now.month, now.day, hour, minute)
+          .add(Duration(days: daysUntil));
+      if (scheduledDate.isBefore(now)) {
+        scheduledDate = scheduledDate.add(const Duration(days: 7));
+      }
 
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    // Handle days of week (1=Mon, 7=Sun)
-    // If today is not in daysOfWeek, find the next valid day
-    while (!daysOfWeek.contains(scheduledDate.weekday)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    await _notificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduledDate,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'medication_reminders',
-          'Medication Reminders',
-          channelDescription: 'Notifications for scheduled medication doses',
-          importance: Importance.max,
-          priority: Priority.high,
+      final int uniqueId = id * 10 + d; // ensure unique IDs per day
+      await _notificationsPlugin.zonedSchedule(
+        uniqueId,
+        title,
+        body,
+        scheduledDate,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'medication_reminders',
+            'Medication Reminders',
+            channelDescription: 'Notifications for scheduled medication doses',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(),
         ),
-        iOS: DarwinNotificationDetails(),
-      ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time, // This makes it repeat daily at the same time
-    );
+        androidAllowWhileIdle: true,
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    }
   }
 
   Future<void> cancelReminder(int id) async {

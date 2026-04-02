@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/ai_chat_service.dart';
+import '../services/openai_chat_service.dart';
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
 
@@ -22,7 +23,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   ];
   bool _isTyping = false;
-  final AIChatService _chatService = AIChatService();
+  final OpenAIChatService _chatService = OpenAIChatService();
 
   void _sendMessage() async {
     final query = _controller.text.trim();

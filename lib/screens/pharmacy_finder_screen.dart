@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
 import '../services/pharmacy_service.dart';
 
 class PharmacyFinderScreen extends StatefulWidget {
@@ -22,11 +25,42 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
 
   Future<void> _loadPharmacies() async {
     setState(() => _isLoading = true);
-    final results = await _pharmacyService.getNearbyPharmacies(widget.medicationName ?? 'Generic');
+    // Try to get current location; fallback to a default if unavailable
+    double lat = 40.7128;
+    double lng = -74.0060;
+    try {
+      Position pos = await _determinePosition();
+      lat = pos.latitude;
+      lng = pos.longitude;
+    } catch (_) {
+      // keep defaults
+    }
+    final results = await _pharmacyService.getNearbyPharmacies(widget.medicationName ?? 'Generic', lat: lat, lng: lng);
     setState(() {
       _pharmacies = results;
       _isLoading = false;
     });
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled, request user to enable in settings
+      throw Exception('Location services are disabled');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        throw Exception('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      throw Exception('Location permissions are permanently denied');
+    }
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 
   @override
@@ -56,47 +90,21 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
   }
 
   Widget _buildMapHeader() {
-    return Container(
-      height: 220,
+    final markers = _pharmacies.map((p) {
+      return Marker(
+        markerId: MarkerId(p.id),
+        position: LatLng(p.latitude, p.longitude),
+        infoWindow: InfoWindow(title: p.name, snippet: p.address),
+      );
+    }).toSet();
+
+    return SizedBox(
+      height: 260,
       width: double.infinity,
-      color: Colors.blue.withValues(alpha: 0.1),
-      child: Stack(
-        children: [
-          // Mock Map Background
-          Center(
-            child: Icon(Icons.map_outlined, size: 60, color: Colors.blue.withValues(alpha: 0.3)),
-          ),
-          ..._pharmacies.take(3).map((p) {
-             final index = _pharmacies.indexOf(p);
-             return Positioned(
-               left: 50 + (index * 80.0),
-               top: 40 + (index * 30.0),
-               child: Column(
-                 children: [
-                   Container(
-                     padding: const EdgeInsets.all(4),
-                     decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(blurRadius: 4, color: Colors.black26)]),
-                     child: const Icon(Icons.local_pharmacy, color: Colors.red, size: 20),
-                   ),
-                   const SizedBox(height: 2),
-                   Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                     decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(4)),
-                     child: Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 8)),
-                   ),
-                 ],
-               ),
-             );
-          }),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton.small(
-              onPressed: () {},
-              child: const Icon(Icons.my_location),
-            ),
-          ),
-        ],
+      child: GoogleMap(
+        initialCameraPosition: const CameraPosition(target: LatLng(40.7128, -74.0060), zoom: 12),
+        markers: markers,
+        onMapCreated: (_) {},
       ),
     );
   }
@@ -180,7 +188,12 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final telUri = Uri.parse('tel:${pharmacy.phone}');
+                          if (await canLaunchUrl(telUri)) {
+                            await launchUrl(telUri);
+                          }
+                        },
                         icon: const Icon(Icons.phone),
                         label: const Text('Call'),
                         style: OutlinedButton.styleFrom(
@@ -191,7 +204,12 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          final mapsUri = Uri.parse('https://www.google.com/maps/dir/?api=1&destination=${pharmacy.latitude},${pharmacy.longitude}');
+                          if (await canLaunchUrl(mapsUri)) {
+                            await launchUrl(mapsUri);
+                          }
+                        },
                         icon: const Icon(Icons.directions),
                         label: const Text('Directions'),
                         style: ElevatedButton.styleFrom(

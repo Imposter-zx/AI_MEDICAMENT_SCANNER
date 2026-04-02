@@ -116,7 +116,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () => Navigator.push(
+                          context,
+                      MaterialPageRoute(
+                            builder: (ctx) => PharmacyFinderScreen(),
+                          ),
+                        ),
                         child: const Text('View All'),
                       ),
                     ],
