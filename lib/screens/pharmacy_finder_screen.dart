@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
+import '../data/pharmacy_repository_impl.dart';
+import '../domain/repositories/pharmacy_repository.dart';
 import '../services/pharmacy_service.dart';
 
 class PharmacyFinderScreen extends StatefulWidget {
@@ -13,13 +15,16 @@ class PharmacyFinderScreen extends StatefulWidget {
 }
 
 class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
-  final PharmacyService _pharmacyService = PharmacyService();
+  late PharmacyRepository _pharmacyRepo;
+  // Deprecated: using repository in production path
   bool _isLoading = true;
   List<Pharmacy> _pharmacies = [];
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
+    _pharmacyRepo = PharmacyRepositoryImpl();
     _loadPharmacies();
   }
 
@@ -35,11 +40,20 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
     } catch (_) {
       // keep defaults
     }
-    final results = await _pharmacyService.getNearbyPharmacies(widget.medicationName ?? 'Generic', lat: lat, lng: lng);
-    setState(() {
-      _pharmacies = results;
-      _isLoading = false;
-    });
+    try {
+      final results = await _pharmacyRepo.getNearbyPharmacies(widget.medicationName ?? 'Generic', lat: lat, lng: lng);
+      setState(() {
+        _pharmacies = results;
+        _isLoading = false;
+        _errorMessage = (results.isEmpty) ? 'Live data unavailable. Please configure a Places API key.' : null;
+      });
+    } catch (e) {
+      setState(() {
+        _pharmacies = [];
+        _isLoading = false;
+        _errorMessage = 'Unable to fetch live data: ${e.toString()}';
+      });
+    }
   }
 
   Future<Position> _determinePosition() async {
@@ -77,6 +91,20 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
       ),
       body: Column(
         children: [
+          if (_errorMessage != null) ...[
+            Container(
+              color: Colors.red.shade100,
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.all(8),
+              child: Row(
+                children: [
+                  const Icon(Icons.error, color: Colors.red),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+                ],
+              ),
+            )
+          ],
           _buildMapHeader(),
           _buildSearchContext(),
           Expanded(
