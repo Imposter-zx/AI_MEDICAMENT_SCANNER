@@ -28,5 +28,16 @@
   "profile": "Profil",
   "chat": "Chat",
   "pharmacy": "Pharmacie",
-  "viewAll": "Voir tout"
+  "viewAll": "Voir tout",
+  "placesApiKey": "Clé API Places",
+  "openaiApiKey": "Clé API OpenAI",
+  "savePlacesApiKey": "Enregistrer clé Places",
+  "saveApiKey": "Enregistrer Clé OpenAI",
+  "placesApiKeyPlaceholder": "Entrer la clé API Places Google",
+  "openaiApiKeyPlaceholder": "Entrer la clé API OpenAI"
+  "placesApiKey": "Clé API Places",
+  "openaiApiKey": "Clé API OpenAI",
+  "savePlacesApiKey": "Enregistrer clé Places",
+  "saveApiKey": "Enregistrer clé OpenAI",
+  "placesApiKeyPlaceholder": "Entrer la clé API Places Google"
 }

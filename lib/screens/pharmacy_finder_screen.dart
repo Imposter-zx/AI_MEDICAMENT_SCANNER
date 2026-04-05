@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:ai_medicament_scanner/l10n/app_localizations.dart';
 import '../data/pharmacy_repository_impl.dart';
 import '../domain/repositories/pharmacy_repository.dart';
 import '../services/pharmacy_service.dart';
@@ -51,7 +52,9 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
       setState(() {
         _pharmacies = [];
         _isLoading = false;
-        _errorMessage = 'Unable to fetch live data: ${e.toString()}';
+        _errorMessage = e.toString().contains('Places API Key')
+            ? '${e.toString()}  - ${AppLocalizations.of(context).translate("settings")}'
+            : 'Unable to fetch live data: ${e.toString()}';
       });
     }
   }
@@ -91,20 +94,24 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
       ),
       body: Column(
         children: [
-          if (_errorMessage != null) ...[
-            Container(
-              color: Colors.red.shade100,
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.all(8),
-              child: Row(
-                children: [
-                  const Icon(Icons.error, color: Colors.red),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
-                ],
-              ),
-            )
-          ],
+              if (_errorMessage != null) ...[
+                Container(
+                  color: Colors.red.shade100,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.error, color: Colors.red),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+                      TextButton(
+                        onPressed: () => Navigator.pushNamed(context, '/settings'),
+                        child: Text(AppLocalizations.of(context).translate('settings')), 
+                      ),
+                    ],
+                  ),
+                )
+              ],
           _buildMapHeader(),
           _buildSearchContext(),
           Expanded(

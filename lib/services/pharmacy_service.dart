@@ -45,6 +45,6 @@ class PharmacyService {
     }
     // Production path requires a Places API key; if missing we error out to production-friendly UI
     // Do not return mock data in production path
-    throw Exception('Places API key not configured or no data available');
+    throw Exception('Missing Google Places API Key. Please set the key in Settings (Places API Key).');
   }
 }

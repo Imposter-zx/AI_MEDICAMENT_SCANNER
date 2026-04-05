@@ -4,7 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/user_profile_provider.dart';
 import '../services/openai_chat_service.dart';
 import 'package:geolocator/geolocator.dart';
+import '../providers/locale_provider.dart';
 import '../providers/reminder_provider.dart';
+import '../l10n/app_localizations.dart';
 import '../services/analytics_service.dart';
 import '../services/backup_service.dart';
 
@@ -101,6 +103,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', lang);
     setState(() => _selectedLanguage = lang);
+    // Runtime locale switch
+    try {
+      final localeProvider = context.read<LocaleProvider>();
+      localeProvider.setLocale(Locale(lang));
+    } catch (_) {
+      // ignore if locale provider not available at this moment
+    }
   }
 
   @override
@@ -138,18 +147,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Places API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context).translate('placesApiKey'), style: const TextStyle(fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _placesApiKeyController,
-                    decoration: const InputDecoration(hintText: 'Enter Google Places API Key'),
+                    decoration: InputDecoration(hintText: AppLocalizations.of(context).translate('placesApiKeyPlaceholder')),
                   ),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: _savePlacesApiKey,
-                      child: const Text('Save Places API Key'),
+                      child: Text(AppLocalizations.of(context).translate('savePlacesApiKey')),
                     ),
                   ),
                 ],
@@ -164,13 +173,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('OpenAI API Key', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(AppLocalizations.of(context).translate('openaiApiKey'), style: TextStyle(fontWeight: FontWeight.bold)),
                   SizedBox(height: 8),
                   TextField(
                     controller: _apiKeyController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: 'Enter OpenAI API Key',
+                      hintText: AppLocalizations.of(context).translate('openaiApiKeyPlaceholder'),
                     ),
                   ),
                   SizedBox(height: 8),
@@ -178,7 +187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: _saveApiKey,
-                      child: Text('Save API Key'),
+                      child: Text(AppLocalizations.of(context).translate('saveApiKey')),
                     ),
                   ),
                 ],

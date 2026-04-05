@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/medical_analyzer_service.dart';
 import '../services/ocr_service.dart';
+import '../services/medical_imaging_service.dart';
 import '../services/storage_service.dart';
 
 class MedicalDataProvider with ChangeNotifier {
@@ -17,10 +18,32 @@ class MedicalDataProvider with ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
   
+  
   List<HistoryItem> history = [];
 
   MedicalDataProvider() {
     _loadHistory();
+  }
+
+  Future<void> analyzeMedicalImage(String imagePath, String userId) async {
+    _startLoading();
+    currentImagePath = imagePath;
+    try {
+      currentImagingResult = await MedicalImagingService().analyzeImage(imagePath);
+      if (currentImagingResult != null) {
+        await _saveHistoryItem(HistoryItem(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          userId: userId,
+          timestamp: DateTime.now(),
+          type: 'imaging',
+          data: currentImagingResult!,
+          imagePath: imagePath,
+        ));
+      }
+      _stopLoading();
+    } catch (e) {
+      _handleError(e.toString());
+    }
   }
 
   Future<void> _loadHistory() async {
