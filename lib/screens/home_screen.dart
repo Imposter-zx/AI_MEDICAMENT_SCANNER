@@ -7,6 +7,7 @@ import '../providers/reminder_provider.dart';
 import '../models/reminder_model.dart';
 import '../models/models.dart';
 import '../widgets/premium_widgets.dart';
+import 'pharmacy_finder_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,7 +23,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 3),
+    );
   }
 
   @override
@@ -33,16 +36,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _checkAndCelebrate(List<MedicationReminder> reminders) {
     if (reminders.isEmpty) return;
-    
+
     final activeReminders = reminders.where((r) => r.isActive).toList();
     if (activeReminders.isEmpty) return;
 
     final now = DateTime.now();
     final allTakenToday = activeReminders.every((r) {
       if (r.lastTaken == null) return false;
-      return r.lastTaken!.year == now.year && 
-             r.lastTaken!.month == now.month && 
-             r.lastTaken!.day == now.day;
+      return r.lastTaken!.year == now.year &&
+          r.lastTaken!.month == now.month &&
+          r.lastTaken!.day == now.day;
     });
 
     if (allTakenToday && !_hasCelebratedToday) {
@@ -88,18 +91,66 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medication_icon.png', 'Scan', '/medication-scan')),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/document_scanner_icon.png', 'Docs', '/document-analysis')),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildSmallFeatureCard(context, 'assets/icons/medical_imaging_icon.png', 'Imaging', '/medical-imaging')),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildActionCard(context, Icons.analytics_outlined, 'Trends', '/trends', Colors.orange)),
-                      const SizedBox(width: 8),
-                      Expanded(child: _buildActionCard(context, Icons.manage_search, 'Search', '/search', Colors.green)),
-                    ],
+                  SizedBox(
+                    height: 120,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            child: _buildSmallFeatureCard(
+                              context,
+                              'assets/icons/medication_icon.png',
+                              'Scan',
+                              '/medication-scan',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 100,
+                            child: _buildSmallFeatureCard(
+                              context,
+                              'assets/icons/document_scanner_icon.png',
+                              'Docs',
+                              '/document-analysis',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 100,
+                            child: _buildSmallFeatureCard(
+                              context,
+                              'assets/icons/medical_imaging_icon.png',
+                              'Imaging',
+                              '/medical-imaging',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 100,
+                            child: _buildActionCard(
+                              context,
+                              Icons.analytics_outlined,
+                              'Trends',
+                              '/trends',
+                              Colors.orange,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            width: 100,
+                            child: _buildActionCard(
+                              context,
+                              Icons.manage_search,
+                              'Search',
+                              '/search',
+                              Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   _buildProfileSwitcher(context),
@@ -113,12 +164,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const Text(
                         'Recent Analyses',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.push(
                           context,
-                      MaterialPageRoute(
+                          MaterialPageRoute(
                             builder: (ctx) => PharmacyFinderScreen(),
                           ),
                         ),
@@ -140,14 +194,23 @@ class _HomeScreenState extends State<HomeScreen> {
               confettiController: _confettiController,
               blastDirectionality: BlastDirectionality.explosive,
               shouldLoop: false,
-              colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              colors: const [
+                Colors.green,
+                Colors.blue,
+                Colors.pink,
+                Colors.orange,
+                Colors.purple,
+              ],
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, '/chat'),
-        label: const Text('AI Assistant', style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text(
+          'AI Assistant',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         icon: const Icon(Icons.auto_awesome),
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
@@ -175,14 +238,21 @@ class _HomeScreenState extends State<HomeScreen> {
               fit: BoxFit.cover,
             ),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
             ],
           ),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
-                colors: [Colors.black.withValues(alpha: 0.6), Colors.transparent],
+                colors: [
+                  Colors.black.withValues(alpha: 0.6),
+                  Colors.transparent,
+                ],
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
               ),
@@ -194,20 +264,35 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Text(
                   '$greetingPrefix,\n$name',
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Icon(
-                      profile != null ? Icons.verified_user : Icons.help_outline,
-                      color: profile != null ? Colors.greenAccent : Colors.orangeAccent,
+                      profile != null
+                          ? Icons.verified_user
+                          : Icons.help_outline,
+                      color: profile != null
+                          ? Colors.greenAccent
+                          : Colors.orangeAccent,
                       size: 16,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      profile != null ? 'Health Profile Active' : 'Set up your health profile',
-                      style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.9), letterSpacing: 0.5),
+                      profile != null
+                          ? 'Health Profile Active'
+                          : 'Set up your health profile',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
@@ -243,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   if (index == profiles.length) {
                     return _buildAddProfileButton(context);
                   }
-                  
+
                   final profile = profiles[index];
                   final isActive = profile.id == activeId;
 
@@ -258,15 +343,21 @@ class _HomeScreenState extends State<HomeScreen> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
-                                color: isActive ? Colors.blue : Colors.transparent,
+                                color: isActive
+                                    ? Colors.blue
+                                    : Colors.transparent,
                                 width: 2,
                               ),
                             ),
                             child: CircleAvatar(
                               radius: 28,
-                              backgroundColor: Colors.blue.withValues(alpha: 0.1),
+                              backgroundColor: Colors.blue.withValues(
+                                alpha: 0.1,
+                              ),
                               child: Text(
-                                profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                                profile.name.isNotEmpty
+                                    ? profile.name[0].toUpperCase()
+                                    : '?',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
@@ -280,7 +371,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             profile.relation == 'Self' ? 'Me' : profile.name,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               color: isActive ? Colors.blue : Colors.grey[600],
                             ),
                           ),
@@ -320,50 +413,162 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, IconData icon, String title, String route, Color color) {
-    return GlassCard(
+  Widget _buildActionCard(
+    BuildContext context,
+    IconData icon,
+    String title,
+    String route,
+    Color color,
+  ) {
+    return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-      height: 90,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 4),
-          Flexible(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: color),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withValues(alpha: 0.1),
+              color.withValues(alpha: 0.05),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.pushNamed(context, route),
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 32),
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 
-  Widget _buildSmallFeatureCard(BuildContext context, String assetPath, String title, String route) {
-    return GlassCard(
+  Widget _buildSmallFeatureCard(
+    BuildContext context,
+    String assetPath,
+    String title,
+    String route,
+  ) {
+    // Map titles to Material Design icons and colors
+    IconData icon;
+    Color iconColor;
+    Color backgroundColor;
+
+    switch (title) {
+      case 'Scan':
+        icon = Icons.qr_code_scanner;
+        iconColor = Colors.blue;
+        backgroundColor = Colors.blue.withValues(alpha: 0.1);
+        break;
+      case 'Docs':
+        icon = Icons.description_outlined;
+        iconColor = Colors.amber;
+        backgroundColor = Colors.amber.withValues(alpha: 0.1);
+        break;
+      case 'Imaging':
+        icon = Icons.health_and_safety_outlined;
+        iconColor = Colors.purple;
+        backgroundColor = Colors.purple.withValues(alpha: 0.1);
+        break;
+      default:
+        icon = Icons.apps;
+        iconColor = Colors.grey;
+        backgroundColor = Colors.grey.withValues(alpha: 0.1);
+    }
+
+    return GestureDetector(
       onTap: () => Navigator.pushNamed(context, route),
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-      height: 90,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(assetPath, height: 24, width: 24),
-          const SizedBox(height: 4),
-          Flexible(
-            child: Text(
-              title,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [backgroundColor, backgroundColor.withValues(alpha: 0.5)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: iconColor.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: iconColor.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => Navigator.pushNamed(context, route),
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 32),
+                ),
+                const SizedBox(height: 8),
+                Flexible(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      color: iconColor,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -386,29 +591,58 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               const Row(
                 children: [
-                  Icon(Icons.report_problem_rounded, color: Colors.red, size: 24),
+                  Icon(
+                    Icons.report_problem_rounded,
+                    color: Colors.red,
+                    size: 24,
+                  ),
                   SizedBox(width: 12),
                   Text(
                     'Safety Alerts Detected',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.red),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.red,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              ...provider.activeWarnings.map((warning) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('• ', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red)),
-                    Expanded(child: Text(warning, style: const TextStyle(fontSize: 13, color: Colors.black87))),
-                  ],
+              ...provider.activeWarnings.map(
+                (warning) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '• ',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          warning,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              )),
+              ),
               const SizedBox(height: 4),
               const Text(
                 'IMPORTANT: Please consult your doctor immediately regarding these combinations.',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, color: Colors.red),
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.red,
+                ),
               ),
             ],
           ),
@@ -438,9 +672,13 @@ class _HomeScreenState extends State<HomeScreen> {
         Consumer<ReminderProvider>(
           builder: (context, provider, _) {
             // Trigger celebration check
-            WidgetsBinding.instance.addPostFrameCallback((_) => _checkAndCelebrate(provider.reminders));
-            
-            final activeReminders = provider.reminders.where((r) => r.isActive).toList();
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _checkAndCelebrate(provider.reminders),
+            );
+
+            final activeReminders = provider.reminders
+                .where((r) => r.isActive)
+                .toList();
             if (activeReminders.isEmpty) {
               return Container(
                 padding: const EdgeInsets.all(20),
@@ -453,7 +691,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Icon(Icons.info_outline, color: Colors.blue),
                     SizedBox(width: 12),
-                    Expanded(child: Text('No active medications tracked. Scan your medicines to add reminders.')),
+                    Expanded(
+                      child: Text(
+                        'No active medications tracked. Scan your medicines to add reminders.',
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -464,7 +706,11 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: activeReminders.length,
-                itemBuilder: (context, index) => _buildReminderCard(context, activeReminders[index], provider),
+                itemBuilder: (context, index) => _buildReminderCard(
+                  context,
+                  activeReminders[index],
+                  provider,
+                ),
               ),
             );
           },
@@ -473,18 +719,29 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildReminderCard(BuildContext context, MedicationReminder reminder, ReminderProvider provider) {
+  Widget _buildReminderCard(
+    BuildContext context,
+    MedicationReminder reminder,
+    ReminderProvider provider,
+  ) {
     bool isTakenToday = false;
     if (reminder.lastTaken != null) {
       final now = DateTime.now();
-      isTakenToday = reminder.lastTaken!.year == now.year && 
-                     reminder.lastTaken!.month == now.month && 
-                     reminder.lastTaken!.day == now.day;
+      isTakenToday =
+          reminder.lastTaken!.year == now.year &&
+          reminder.lastTaken!.month == now.month &&
+          reminder.lastTaken!.day == now.day;
     }
 
     // Calculate time to next dose (simplified)
     final now = DateTime.now();
-    final todayDose = DateTime(now.year, now.month, now.day, reminder.time.hour, reminder.time.minute);
+    final todayDose = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      reminder.time.hour,
+      reminder.time.minute,
+    );
     String timeAgo = "";
     if (isTakenToday) {
       timeAgo = "Completed for today";
@@ -513,45 +770,81 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Text(
                     reminder.medicationName,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, letterSpacing: -0.5),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      letterSpacing: -0.5,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: isTakenToday ? Colors.green.withValues(alpha: 0.1) : Colors.blue.withValues(alpha: 0.1),
+                    color: isTakenToday
+                        ? Colors.green.withValues(alpha: 0.1)
+                        : Colors.blue.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(isTakenToday ? Icons.check : Icons.notifications_none_rounded, 
-                       color: isTakenToday ? Colors.green : Colors.blue, size: 16),
+                  child: Icon(
+                    isTakenToday
+                        ? Icons.check
+                        : Icons.notifications_none_rounded,
+                    color: isTakenToday ? Colors.green : Colors.blue,
+                    size: 16,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Text('${reminder.dosage} • ${reminder.time.format(context)}', 
-                 style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: FontWeight.w500)),
+            Text(
+              '${reminder.dosage} • ${reminder.time.format(context)}',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(timeAgo, style: TextStyle(fontSize: 11, color: isTakenToday ? Colors.green : Colors.orange, fontWeight: FontWeight.bold)),
+            Text(
+              timeAgo,
+              style: TextStyle(
+                fontSize: 11,
+                color: isTakenToday ? Colors.green : Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const Spacer(),
             SizedBox(
               width: double.infinity,
-              child: isTakenToday ? ElevatedButton(
-                onPressed: null,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                child: const Text('Taken', style: TextStyle(fontWeight: FontWeight.bold)),
-              ) : GradientButton(
-                text: 'Mark Taken',
-                onPressed: () {
-                  provider.markAsTaken(reminder.id);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Marked ${reminder.medicationName} as taken!'), backgroundColor: Colors.green),
-                  );
-                },
-              ),
+              child: isTakenToday
+                  ? ElevatedButton(
+                      onPressed: null,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Taken',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  : GradientButton(
+                      text: 'Mark Taken',
+                      onPressed: () {
+                        provider.markAsTaken(reminder.id);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Marked ${reminder.medicationName} as taken!',
+                            ),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),
@@ -574,7 +867,13 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 20),
               SizedBox(width: 8),
-              Text('Safety Reminder', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange)),
+              Text(
+                'Safety Reminder',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                ),
+              ),
             ],
           ),
           SizedBox(height: 8),
@@ -606,9 +905,17 @@ class HistoryList extends StatelessWidget {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  Icon(Icons.history, size: 48, color: Colors.grey.withValues(alpha: 0.5)),
+                  Icon(
+                    Icons.history,
+                    size: 48,
+                    color: Colors.grey.withValues(alpha: 0.5),
+                  ),
                   const SizedBox(height: 12),
-                  const Text('No recent analyses found.\nScan something to get started!', textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                  const Text(
+                    'No recent analyses found.\nScan something to get started!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ],
               ),
             ),
@@ -631,10 +938,24 @@ class HistoryList extends StatelessWidget {
                   color: _getTypeColor(item.type).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Center(child: Icon(_getTypeIcon(item.type), color: _getTypeColor(item.type))),
+                child: Center(
+                  child: Icon(
+                    _getTypeIcon(item.type),
+                    color: _getTypeColor(item.type),
+                  ),
+                ),
               ),
-              title: Text(_getItemTitle(item), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
-              subtitle: Text('${item.timestamp.day}/${item.timestamp.month} • ${_getTypeLabel(item.type)}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              title: Text(
+                _getItemTitle(item),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              subtitle: Text(
+                '${item.timestamp.day}/${item.timestamp.month} • ${_getTypeLabel(item.type)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
+              ),
               trailing: const Icon(Icons.chevron_right, size: 18),
               onTap: () {
                 if (item.type == 'medication') {
@@ -642,7 +963,8 @@ class HistoryList extends StatelessWidget {
                 } else if (item.type == 'document') {
                   provider.currentDocument = item.data as MedicalDocument;
                 } else if (item.type == 'imaging') {
-                  provider.currentImagingResult = item.data as MedicalImagingResult;
+                  provider.currentImagingResult =
+                      item.data as MedicalImagingResult;
                 }
                 provider.currentImagePath = item.imagePath;
                 Navigator.pushNamed(context, '/results');
@@ -656,35 +978,49 @@ class HistoryList extends StatelessWidget {
 
   IconData _getTypeIcon(String type) {
     switch (type) {
-      case 'medication': return Icons.medication_liquid;
-      case 'document': return Icons.description;
-      case 'imaging': return Icons.biotech;
-      default: return Icons.help_outline;
+      case 'medication':
+        return Icons.medication_liquid;
+      case 'document':
+        return Icons.description;
+      case 'imaging':
+        return Icons.biotech;
+      default:
+        return Icons.help_outline;
     }
   }
 
   Color _getTypeColor(String type) {
     switch (type) {
-      case 'medication': return Colors.teal;
-      case 'document': return Colors.blue;
-      case 'imaging': return Colors.purple;
-      default: return Colors.grey;
+      case 'medication':
+        return Colors.teal;
+      case 'document':
+        return Colors.blue;
+      case 'imaging':
+        return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 
   String _getTypeLabel(String type) {
     switch (type) {
-      case 'medication': return 'Medicine';
-      case 'document': return 'Document';
-      case 'imaging': return 'Imaging';
-      default: return 'Analysis';
+      case 'medication':
+        return 'Medicine';
+      case 'document':
+        return 'Document';
+      case 'imaging':
+        return 'Imaging';
+      default:
+        return 'Analysis';
     }
   }
 
   String _getItemTitle(HistoryItem item) {
     if (item.type == 'medication') return (item.data as Medication).name;
-    if (item.type == 'document') return (item.data as MedicalDocument).documentType.toUpperCase();
-    if (item.type == 'imaging') return (item.data as MedicalImagingResult).imagingType;
+    if (item.type == 'document')
+      return (item.data as MedicalDocument).documentType.toUpperCase();
+    if (item.type == 'imaging')
+      return (item.data as MedicalImagingResult).imagingType;
     return 'Analysis Result';
   }
 }

@@ -8,13 +8,22 @@ class PharmacyApiService {
   PharmacyApiService(this._apiKey);
 
   // Google Places Nearby Search
-  Future<List<Pharmacy>> searchNearby({required double lat, required double lng, int radius = 2000}) async {
-    final url = Uri.parse('https://maps.googleapis.com/maps/api/place/nearbysearch/json').replace(queryParameters: {
-      'location': '$lat,$lng',
-      'radius': radius.toString(),
-      'type': 'pharmacy',
-      'key': _apiKey,
-    });
+  Future<List<Pharmacy>> searchNearby({
+    required double lat,
+    required double lng,
+    int radius = 2000,
+  }) async {
+    final url =
+        Uri.parse(
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
+        ).replace(
+          queryParameters: {
+            'location': '$lat,$lng',
+            'radius': radius.toString(),
+            'type': 'pharmacy',
+            'key': _apiKey,
+          },
+        );
 
     final res = await http.get(url);
     if (res.statusCode != 200) {
@@ -29,17 +38,19 @@ class PharmacyApiService {
       final location = item['geometry']?['location'];
       final lat2 = (location?['lat'] as num?)?.toDouble() ?? lat;
       final lng2 = (location?['lng'] as num?)?.toDouble() ?? lng;
-      pharmacies.add(Pharmacy(
-        id: item['place_id'] ?? name,
-        name: name,
-        address: vicinity,
-        distance: null,
-        isOpen: true,
-        hasStock: true,
-        phone: '',
-        latitude: lat2,
-        longitude: lng2,
-      ));
+      pharmacies.add(
+        Pharmacy(
+          id: item['place_id'] ?? name,
+          name: name,
+          address: vicinity,
+          distance: 0.0,
+          isOpen: true,
+          hasStock: true,
+          phone: '',
+          latitude: lat2,
+          longitude: lng2,
+        ),
+      );
     }
     // Deduplicate by name without using extension
     final Map<String, Pharmacy> unique = {};

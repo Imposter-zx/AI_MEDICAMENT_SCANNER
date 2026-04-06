@@ -17,8 +17,7 @@ class MedicalDataProvider with ChangeNotifier {
   String? currentImagePath;
   bool isLoading = false;
   String? errorMessage;
-  
-  
+
   List<HistoryItem> history = [];
 
   MedicalDataProvider() {
@@ -29,16 +28,20 @@ class MedicalDataProvider with ChangeNotifier {
     _startLoading();
     currentImagePath = imagePath;
     try {
-      currentImagingResult = await MedicalImagingService().analyzeImage(imagePath);
+      currentImagingResult = await MedicalImagingService().analyzeImage(
+        imagePath,
+      );
       if (currentImagingResult != null) {
-        await _saveHistoryItem(HistoryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: userId,
-          timestamp: DateTime.now(),
-          type: 'imaging',
-          data: currentImagingResult!,
-          imagePath: imagePath,
-        ));
+        await _saveHistoryItem(
+          HistoryItem(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            timestamp: DateTime.now(),
+            type: 'imaging',
+            data: currentImagingResult!,
+            imagePath: imagePath,
+          ),
+        );
       }
       _stopLoading();
     } catch (e) {
@@ -49,10 +52,11 @@ class MedicalDataProvider with ChangeNotifier {
   Future<void> _loadHistory() async {
     try {
       final historyJson = await _storage.getHistory();
-      history = historyJson
-          .map((item) => HistoryItem.fromMap(json.decode(item)))
-          .toList()
-        ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
+      history =
+          historyJson
+              .map((item) => HistoryItem.fromMap(json.decode(item)))
+              .toList()
+            ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
       notifyListeners();
     } catch (e) {
       debugPrint("Error loading history: $e");
@@ -64,7 +68,9 @@ class MedicalDataProvider with ChangeNotifier {
       history.insert(0, item);
       if (history.length > 20) history.removeLast();
 
-      final historyJson = history.map((item) => json.encode(item.toMap())).toList();
+      final historyJson = history
+          .map((item) => json.encode(item.toMap()))
+          .toList();
       await _storage.setHistory(historyJson);
       notifyListeners();
     } catch (e) {
@@ -79,18 +85,21 @@ class MedicalDataProvider with ChangeNotifier {
       final text = await _ocrService.extractTextFromImage(imagePath);
       currentMedication = await _analyzerService.analyzeMedicationText(text);
       currentMedication?.imagePath = imagePath;
-      
-      if (currentMedication != null && currentMedication!.name != "Unknown Medication") {
-        await _saveHistoryItem(HistoryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: userId,
-          timestamp: DateTime.now(),
-          type: 'medication',
-          data: currentMedication!,
-          imagePath: imagePath,
-        ));
+
+      if (currentMedication != null &&
+          currentMedication!.name != "Unknown Medication") {
+        await _saveHistoryItem(
+          HistoryItem(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            timestamp: DateTime.now(),
+            type: 'medication',
+            data: currentMedication!,
+            imagePath: imagePath,
+          ),
+        );
       }
-      
+
       _stopLoading();
     } catch (e) {
       _handleError(e.toString());
@@ -104,41 +113,47 @@ class MedicalDataProvider with ChangeNotifier {
       final text = await _ocrService.extractTextFromImage(imagePath);
       currentDocument = await _analyzerService.analyzeDocument(text);
       currentDocument?.imagePath = imagePath;
-      
+
       if (currentDocument != null) {
-        await _saveHistoryItem(HistoryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: userId,
-          timestamp: DateTime.now(),
-          type: 'document',
-          data: currentDocument!,
-          imagePath: imagePath,
-        ));
+        await _saveHistoryItem(
+          HistoryItem(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            timestamp: DateTime.now(),
+            type: 'document',
+            data: currentDocument!,
+            imagePath: imagePath,
+          ),
+        );
       }
-      
+
       _stopLoading();
     } catch (e) {
       _handleError(e.toString());
     }
   }
 
-  Future<void> analyzeMedicalImage(String imagePath, String userId) async {
+  Future<void> _analyzeMedicalImage(String imagePath, String userId) async {
     _startLoading();
     currentImagePath = imagePath;
     try {
-      currentImagingResult = await _analyzerService.analyzeMedicalImage(imagePath);
-      
+      currentImagingResult = await _analyzerService.analyzeMedicalImage(
+        imagePath,
+      );
+
       if (currentImagingResult != null) {
-        await _saveHistoryItem(HistoryItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          userId: userId,
-          timestamp: DateTime.now(),
-          type: 'imaging',
-          data: currentImagingResult!,
-          imagePath: imagePath,
-        ));
+        await _saveHistoryItem(
+          HistoryItem(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            userId: userId,
+            timestamp: DateTime.now(),
+            type: 'imaging',
+            data: currentImagingResult!,
+            imagePath: imagePath,
+          ),
+        );
       }
-      
+
       _stopLoading();
     } catch (e) {
       _handleError(e.toString());

@@ -5,6 +5,7 @@ import '../providers/user_profile_provider.dart';
 import '../services/openai_chat_service.dart';
 import 'package:geolocator/geolocator.dart';
 import '../providers/locale_provider.dart';
+import '../providers/theme_provider.dart';
 import '../providers/reminder_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/analytics_service.dart';
@@ -18,10 +19,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  ThemeMode _themeMode = ThemeMode.system;
   bool _notificationsEnabled = true;
   bool _analyticsEnabled = false;
-  String _selectedLanguage = 'en';
   final TextEditingController _apiKeyController = TextEditingController();
   final TextEditingController _placesApiKeyController = TextEditingController();
 
@@ -45,9 +44,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (key.isNotEmpty) {
       await OpenAIChatService().setApiKey(key);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OpenAI API Key saved')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('OpenAI API Key saved')));
       }
     }
   }
@@ -64,26 +63,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('places_api_key', key);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Places API Key saved')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Places API Key saved')));
     }
   }
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _themeMode = ThemeMode.values[prefs.getInt('theme_mode') ?? 0];
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
       _analyticsEnabled = prefs.getBool('analytics_enabled') ?? false;
-      _selectedLanguage = prefs.getString('language') ?? 'en';
     });
-  }
-
-  Future<void> _saveThemeMode(ThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('theme_mode', mode.index);
-    setState(() => _themeMode = mode);
   }
 
   Future<void> _saveNotifications(bool value) async {
@@ -99,33 +90,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() => _analyticsEnabled = value);
   }
 
-  Future<void> _saveLanguage(String lang) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', lang);
-    setState(() => _selectedLanguage = lang);
-    // Runtime locale switch
-    try {
-      final localeProvider = context.read<LocaleProvider>();
-      localeProvider.setLocale(Locale(lang));
-    } catch (_) {
-      // ignore if locale provider not available at this moment
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Settings'), centerTitle: true),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           _buildSectionTitle('Appearance'),
-          _buildThemeSelector(),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, _) =>
+                _buildThemeSelector(themeProvider),
+          ),
           const SizedBox(height: 8),
-          _buildLanguageSelector(),
+          Consumer<LocaleProvider>(
+            builder: (context, localeProvider, _) =>
+                _buildLanguageSelector(localeProvider),
+          ),
           const SizedBox(height: 24),
           _buildSectionTitle('Notifications'),
           _buildNotificationToggle(),
@@ -147,18 +128,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(AppLocalizations.of(context).translate('placesApiKey'), style: const TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    AppLocalizations.of(context).translate('placesApiKey'),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _placesApiKeyController,
-                    decoration: InputDecoration(hintText: AppLocalizations.of(context).translate('placesApiKeyPlaceholder')),
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(
+                        context,
+                      ).translate('placesApiKeyPlaceholder'),
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: _savePlacesApiKey,
-                      child: Text(AppLocalizations.of(context).translate('savePlacesApiKey')),
+                      child: Text(
+                        AppLocalizations.of(
+                          context,
+                        ).translate('savePlacesApiKey'),
+                      ),
                     ),
                   ),
                 ],
@@ -173,13 +165,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(AppLocalizations.of(context).translate('openaiApiKey'), style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    AppLocalizations.of(context).translate('openaiApiKey'),
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(height: 8),
                   TextField(
                     controller: _apiKeyController,
                     obscureText: true,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context).translate('openaiApiKeyPlaceholder'),
+                      hintText: AppLocalizations.of(
+                        context,
+                      ).translate('openaiApiKeyPlaceholder'),
                     ),
                   ),
                   SizedBox(height: 8),
@@ -187,7 +184,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: _saveApiKey,
-                      child: Text(AppLocalizations.of(context).translate('saveApiKey')),
+                      child: Text(
+                        AppLocalizations.of(context).translate('saveApiKey'),
+                      ),
                     ),
                   ),
                 ],
@@ -217,7 +216,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildThemeSelector() {
+  Widget _buildThemeSelector(ThemeProvider themeProvider) {
     return Card(
       child: Column(
         children: [
@@ -230,8 +229,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: ThemeMode.system,
-            groupValue: _themeMode,
-            onChanged: (v) => _saveThemeMode(v!),
+            groupValue: themeProvider.themeMode,
+            onChanged: (v) => themeProvider.setThemeMode(v!),
           ),
           RadioListTile<ThemeMode>(
             title: const Row(
@@ -242,8 +241,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: ThemeMode.light,
-            groupValue: _themeMode,
-            onChanged: (v) => _saveThemeMode(v!),
+            groupValue: themeProvider.themeMode,
+            onChanged: (v) => themeProvider.setThemeMode(v!),
           ),
           RadioListTile<ThemeMode>(
             title: const Row(
@@ -254,15 +253,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: ThemeMode.dark,
-            groupValue: _themeMode,
-            onChanged: (v) => _saveThemeMode(v!),
+            groupValue: themeProvider.themeMode,
+            onChanged: (v) => themeProvider.setThemeMode(v!),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLanguageSelector() {
+  Widget _buildLanguageSelector(LocaleProvider localeProvider) {
     return Card(
       child: Column(
         children: [
@@ -275,8 +274,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: 'en',
-            groupValue: _selectedLanguage,
-            onChanged: (v) => _saveLanguage(v!),
+            groupValue: localeProvider.locale.languageCode,
+            onChanged: (v) => localeProvider.setLanguageCode(v!),
           ),
           RadioListTile<String>(
             title: const Row(
@@ -287,8 +286,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: 'ar',
-            groupValue: _selectedLanguage,
-            onChanged: (v) => _saveLanguage(v!),
+            groupValue: localeProvider.locale.languageCode,
+            onChanged: (v) => localeProvider.setLanguageCode(v!),
           ),
           RadioListTile<String>(
             title: const Row(
@@ -299,8 +298,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             value: 'fr',
-            groupValue: _selectedLanguage,
-            onChanged: (v) => _saveLanguage(v!),
+            groupValue: localeProvider.locale.languageCode,
+            onChanged: (v) => localeProvider.setLanguageCode(v!),
           ),
         ],
       ),
@@ -312,10 +311,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: SwitchListTile(
         title: const Text('Medication Reminders'),
         subtitle: Text(
-          _notificationsEnabled ? 'Notifications enabled' : 'Notifications disabled',
+          _notificationsEnabled
+              ? 'Notifications enabled'
+              : 'Notifications disabled',
         ),
         secondary: Icon(
-          _notificationsEnabled ? Icons.notifications_active : Icons.notifications_off,
+          _notificationsEnabled
+              ? Icons.notifications_active
+              : Icons.notifications_off,
           color: _notificationsEnabled ? Colors.blue : Colors.grey,
         ),
         value: _notificationsEnabled,
@@ -338,13 +341,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await BackupService().exportAndShare();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Backup exported successfully!'), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text('Backup exported successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Export failed: $e'), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text('Export failed: $e'),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               }
@@ -362,7 +371,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(success ? 'Data imported successfully!' : 'Import failed or cancelled'),
+                    content: Text(
+                      success
+                          ? 'Data imported successfully!'
+                          : 'Import failed or cancelled',
+                    ),
                     backgroundColor: success ? Colors.green : Colors.red,
                   ),
                 );
@@ -391,7 +404,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: SwitchListTile(
         title: const Text('Usage Analytics'),
         subtitle: Text(
-          _analyticsEnabled ? 'Tracking enabled (local only)' : 'Tracking disabled',
+          _analyticsEnabled
+              ? 'Tracking enabled (local only)'
+              : 'Tracking disabled',
         ),
         secondary: Icon(
           _analyticsEnabled ? Icons.analytics : Icons.analytics_outlined,
@@ -414,7 +429,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               const Icon(Icons.info_outline, color: Colors.grey),
               const SizedBox(width: 12),
-              Expanded(child: Text('No usage data yet. Use the app to see analytics.', style: TextStyle(color: Colors.grey[600]))),
+              Expanded(
+                child: Text(
+                  'No usage data yet. Use the app to see analytics.',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
             ],
           ),
         ),
@@ -426,20 +446,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Feature Usage', style: TextStyle(fontWeight: FontWeight.bold)),
+            const Text(
+              'Feature Usage',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            ...featureUsage.entries.map((e) => Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(e.key),
-                  Text('${e.value}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ],
+            ...featureUsage.entries.map(
+              (e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(e.key),
+                    Text(
+                      '${e.value}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
               ),
-            )),
+            ),
             const SizedBox(height: 8),
-            Text('Total events: ${summary['totalEvents']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            Text(
+              'Total events: ${summary['totalEvents']}',
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
       ),
@@ -458,14 +489,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.description_outlined, color: Colors.green),
+            leading: const Icon(
+              Icons.description_outlined,
+              color: Colors.green,
+            ),
             title: const Text('License'),
             subtitle: const Text('MIT License'),
           ),
         ),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined, color: Colors.orange),
+            leading: const Icon(
+              Icons.privacy_tip_outlined,
+              color: Colors.orange,
+            ),
             title: const Text('Privacy Policy'),
             subtitle: const Text('Your data stays on your device'),
           ),
@@ -495,11 +532,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 context.read<UserProfileProvider>().clearAll();
                 context.read<ReminderProvider>().clearAll();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('All data cleared'), backgroundColor: Colors.orange),
+                  const SnackBar(
+                    content: Text('All data cleared'),
+                    backgroundColor: Colors.orange,
+                  ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
             child: const Text('Clear All'),
           ),
         ],

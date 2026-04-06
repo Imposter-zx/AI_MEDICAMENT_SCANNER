@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
 import 'providers/locale_provider.dart';
+import 'providers/theme_provider.dart';
 import 'screens/medication_scan_screen.dart';
 import 'screens/document_analysis_screen.dart';
 import 'screens/medical_imaging_screen.dart';
@@ -11,7 +12,6 @@ import 'screens/settings_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'providers/medical_data_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'providers/user_profile_provider.dart';
 import 'providers/reminder_provider.dart';
 import 'screens/profile_screen.dart';
@@ -20,159 +20,121 @@ import 'screens/medication_search_screen.dart';
 import 'screens/chat_screen.dart';
 import 'screens/pharmacy_finder_screen.dart';
 import 'l10n/app_localizations.dart';
+import 'theme/app_theme.dart';
+import 'utils/app_logger.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+
+  try {
+    final localeProvider = LocaleProvider();
+    final themeProvider = ThemeProvider();
+
+    await Future.wait([
+      localeProvider.initialize(),
+      themeProvider.initialize(),
+    ]);
+
+    AppLogger.info('App initialization successful');
+
+    runApp(MyApp(initialLocale: localeProvider, initialTheme: themeProvider));
+  } catch (e) {
+    AppLogger.error('Failed to initialize app', e);
+    runApp(
+      MyApp(initialLocale: LocaleProvider(), initialTheme: ThemeProvider()),
+    );
+  }
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  final LocaleProvider initialLocale;
+  final ThemeProvider initialTheme;
 
-  static void setThemeMode(BuildContext context, ThemeMode mode) {
-    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
-    state?.setThemeMode(mode);
-  }
-
-  static void setLocale(BuildContext context, Locale locale) {
-    _MyAppState? state = context.findAncestorStateOfType<_MyAppState>();
-    state?.setLocale(locale);
-  }
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.system;
-  bool _onboardingComplete = false;
-  bool _loading = true;
-  String _languageCode = 'en';
-  Locale _locale = const Locale('en');
-
-  @override
-  void initState() {
-    super.initState();
-    _initApp();
-  }
-
-  Future<void> _initApp() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _onboardingComplete = prefs.getBool('onboarding_complete') ?? false;
-      _themeMode = ThemeMode.values[prefs.getInt('theme_mode') ?? 0];
-      _languageCode = prefs.getString('language') ?? 'en';
-      _locale = Locale(_languageCode);
-      _loading = false;
-    });
-  }
-
-  void setThemeMode(ThemeMode mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('theme_mode', mode.index);
-    setState(() {
-      _themeMode = mode;
-    });
-  }
-
-  void setLocale(Locale locale) {
-    setState(() {
-      _languageCode = locale.languageCode;
-      _locale = locale;
-    });
-  }
+  const MyApp({
+    required this.initialLocale,
+    required this.initialTheme,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
-      );
-    }
-
-  return MultiProvider(
+    return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => MedicalDataProvider()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => ReminderProvider()),
-        ChangeNotifierProvider(create: (_) => LocaleProvider()),
+        ChangeNotifierProvider.value(value: initialLocale),
+        ChangeNotifierProvider.value(value: initialTheme),
       ],
-      child: Builder(builder: (ctx) {
-        final localeProvider = ctx.read<LocaleProvider>();
-        return MaterialApp(
-          locale: localeProvider.locale,
-          title: 'AI Medicament Scanner',
-          debugShowCheckedModeBanner: false,
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF1E3A8A),
-              primary: const Color(0xFF2563EB),
-              secondary: const Color(0xFF0D9488),
-              surface: const Color(0xFFF8FAFC),
-              brightness: Brightness.light,
-            ),
-            useMaterial3: true,
-            textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
-              bodyColor: const Color(0xFF0F172A),
-              displayColor: const Color(0xFF0F172A),
-            ),
-            cardTheme: CardThemeData(
-              elevation: 8,
-              shadowColor: const Color(0xFF2563EB).withValues(alpha: 0.1),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-              clipBehavior: Clip.antiAlias,
-            ),
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ),
-            inputDecorationTheme: InputDecorationTheme(
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Colors.grey.shade200),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-              ),
-            ),
-          ),
-          home: _onboardingComplete ? const HomeScreen() : const OnboardingScreen(),
-          routes: {
-            '/medication-scan': (context) => const MedicationScanScreen(),
-            '/document-analysis': (context) => const DocumentAnalysisScreen(),
-            '/medical-imaging': (context) => const MedicalImagingScreen(),
-            '/results': (context) => const ResultsScreen(),
-            '/profile': (context) => const ProfileScreen(),
-            '/trends': (context) => const TrendsScreen(),
-            '/search': (context) => const MedicationSearchScreen(),
-            '/chat': (context) => const ChatScreen(),
-            '/settings': (context) => const SettingsScreen(),
-            '/pharmacy': (context) {
-              final args = ModalRoute.of(context)?.settings.arguments as String?;
-              return PharmacyFinderScreen(medicationName: args);
+      child: Consumer2<ThemeProvider, LocaleProvider>(
+        builder: (context, themeProvider, localeProvider, _) {
+          return FutureBuilder<bool>(
+            future: _checkOnboarding(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return MaterialApp(
+                  themeMode: themeProvider.themeMode,
+                  theme: AppTheme.lightTheme(),
+                  darkTheme: AppTheme.darkTheme(),
+                  home: Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              return MaterialApp(
+                locale: localeProvider.locale,
+                title: 'AI Medicament Scanner',
+                debugShowCheckedModeBanner: false,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: AppLocalizations.supportedLocales,
+                themeMode: themeProvider.themeMode,
+                theme: AppTheme.lightTheme(),
+                darkTheme: AppTheme.darkTheme(),
+                home: snapshot.data == true
+                    ? const HomeScreen()
+                    : const OnboardingScreen(),
+                routes: {
+                  '/medication-scan': (context) => const MedicationScanScreen(),
+                  '/document-analysis': (context) =>
+                      const DocumentAnalysisScreen(),
+                  '/medical-imaging': (context) => const MedicalImagingScreen(),
+                  '/results': (context) => const ResultsScreen(),
+                  '/profile': (context) => const ProfileScreen(),
+                  '/trends': (context) => const TrendsScreen(),
+                  '/search': (context) => const MedicationSearchScreen(),
+                  '/chat': (context) => const ChatScreen(),
+                  '/settings': (context) => const SettingsScreen(),
+                  '/pharmacy': (context) {
+                    final args =
+                        ModalRoute.of(context)?.settings.arguments as String?;
+                    return PharmacyFinderScreen(medicationName: args);
+                  },
+                },
+              );
             },
-          },
-        );
-      }),
+          );
+        },
+      ),
     );
+  }
+
+  static Future<bool> _checkOnboarding() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('onboarding_complete') ?? false;
+    } catch (e) {
+      AppLogger.error('Failed to check onboarding status', e);
+      return false;
+    }
   }
 }

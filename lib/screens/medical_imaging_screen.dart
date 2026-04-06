@@ -20,7 +20,8 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MedicalDataProvider>();
-    final userId = context.read<UserProfileProvider>().activeProfileId ?? 'default';
+    final userId =
+        context.read<UserProfileProvider>().activeProfileId ?? 'default';
     return Scaffold(
       appBar: AppBar(
         title: const Text('🩺 Medical Imaging'),
@@ -70,9 +71,17 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                   ),
                 ),
               if (_selectedImage != null) const SizedBox(height: 8),
-              if (provider.isLoading) const Center(child: CircularProgressIndicator()),
+              if (provider.isLoading)
+                const Center(child: CircularProgressIndicator()),
               if (provider.currentImagingResult != null)
-                Card(child: ListTile(title: Text('Imaging: ${provider.currentImagingResult!.imagingType}'), subtitle: Text(provider.currentImagingResult!.description))),
+                Card(
+                  child: ListTile(
+                    title: Text(
+                      'Imaging: ${provider.currentImagingResult!.imagingType}',
+                    ),
+                    subtitle: Text(provider.currentImagingResult!.description),
+                  ),
+                ),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -84,7 +93,11 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
                   children: const [
                     Icon(Icons.info, color: Colors.orange, size: 20),
                     SizedBox(width: 8),
-                    Expanded(child: Text('Always consult a radiologist for official interpretation.')),
+                    Expanded(
+                      child: Text(
+                        'Always consult a radiologist for official interpretation.',
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -97,9 +110,13 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
 
   Future<void> _pickImage() async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+      final XFile? pickedFile = await _picker.pickImage(
+        source: ImageSource.gallery,
+      );
       if (pickedFile != null) {
-        setState(() { _selectedImage = File(pickedFile.path); });
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
       }
     } catch (e) {
       // ignore errors
@@ -113,38 +130,5 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
     if (mounted && provider.currentImagingResult != null) {
       Navigator.pushNamed(context, '/results');
     }
-  }
-}
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('🩺 Medical Imaging'),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              Icon(Icons.info_outline, size: 48, color: Colors.orange),
-              SizedBox(height: 16),
-              Text(
-                'Coming Soon: Medical Imaging Analysis',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'This feature is under active development. A medical professional should interpret imaging results.',
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
