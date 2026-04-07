@@ -16,8 +16,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late ConfettiController _confettiController;
+  late AnimationController _fadeController;
+  late AnimationController _slideController;
   bool _hasCelebratedToday = false;
 
   @override
@@ -26,11 +28,23 @@ class _HomeScreenState extends State<HomeScreen> {
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeController.forward();
+    _slideController.forward();
   }
 
   @override
   void dispose() {
     _confettiController.dispose();
+    _fadeController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
@@ -61,10 +75,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('AI Medical Assistant'),
+        title: const Text(
+          'AI Medical Assistant',
+          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
+        ),
         centerTitle: true,
-        elevation: 2,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: () => Navigator.pushNamed(context, '/settings'),
@@ -76,134 +95,174 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Choose a Feature',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 120,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 100,
-                            child: _buildSmallFeatureCard(
-                              context,
-                              'assets/icons/medication_icon.png',
-                              'Scan',
-                              '/medication-scan',
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.blue.shade50,
+              Colors.indigo.shade50,
+              Colors.purple.shade50,
+            ],
+          ),
+        ),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 100, 16, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FadeTransition(
+                      opacity: _fadeController,
+                      child: _buildHeader(context),
+                    ),
+                    const SizedBox(height: 32),
+                    SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.3),
+                        end: Offset.zero,
+                      ).animate(_slideController),
+                      child: FadeTransition(
+                        opacity: _slideController,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quick Access',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.grey.shade800,
+                                letterSpacing: 0.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 100,
-                            child: _buildSmallFeatureCard(
-                              context,
-                              'assets/icons/document_scanner_icon.png',
-                              'Docs',
-                              '/document-analysis',
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              height: 140,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 100,
+                                      child: _buildAnimatedFeatureCard(
+                                        context,
+                                        Icons.camera_alt,
+                                        'Scan',
+                                        '/medication-scan',
+                                        Colors.blue,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 100,
+                                      child: _buildAnimatedFeatureCard(
+                                        context,
+                                        Icons.description,
+                                        'Docs',
+                                        '/document-analysis',
+                                        Colors.orange,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 100,
+                                      child: _buildAnimatedFeatureCard(
+                                        context,
+                                        Icons.image_search,
+                                        'Imaging',
+                                        '/medical-imaging',
+                                        Colors.teal,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 100,
+                                      child: _buildAnimatedFeatureCard(
+                                        context,
+                                        Icons.analytics,
+                                        'Trends',
+                                        '/trends',
+                                        Colors.purple,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 100,
+                                      child: _buildAnimatedFeatureCard(
+                                        context,
+                                        Icons.search,
+                                        'Search',
+                                        '/search',
+                                        Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 100,
-                            child: _buildSmallFeatureCard(
-                              context,
-                              'assets/icons/medical_imaging_icon.png',
-                              'Imaging',
-                              '/medical-imaging',
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 100,
-                            child: _buildActionCard(
-                              context,
-                              Icons.analytics_outlined,
-                              'Trends',
-                              '/trends',
-                              Colors.orange,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          SizedBox(
-                            width: 100,
-                            child: _buildActionCard(
-                              context,
-                              Icons.manage_search,
-                              'Search',
-                              '/search',
-                              Colors.green,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildProfileSwitcher(context),
-                  const SizedBox(height: 24),
-                  _buildSafetyAlerts(context),
-                  const SizedBox(height: 24),
-                  _buildMedicationDashboard(context),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Recent Analyses',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (ctx) => PharmacyFinderScreen(),
+                    const SizedBox(height: 32),
+                    _buildProfileSwitcher(context),
+                    const SizedBox(height: 24),
+                    _buildSafetyAlerts(context),
+                    const SizedBox(height: 24),
+                    _buildMedicationDashboard(context),
+                    const SizedBox(height: 32),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recent Analyses',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.grey.shade800,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        child: const Text('View All'),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const HistoryList(),
-                  const SizedBox(height: 32),
-                  _buildSafetyNotice(),
+                        TextButton(
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (ctx) => PharmacyFinderScreen(),
+                            ),
+                          ),
+                          child: const Text('View All'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const HistoryList(),
+                    const SizedBox(height: 32),
+                    _buildSafetyNotice(),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                colors: const [
+                  Colors.green,
+                  Colors.blue,
+                  Colors.pink,
+                  Colors.orange,
+                  Colors.purple,
                 ],
               ),
             ),
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: ConfettiWidget(
-              confettiController: _confettiController,
-              blastDirectionality: BlastDirectionality.explosive,
-              shouldLoop: false,
-              colors: const [
-                Colors.green,
-                Colors.blue,
-                Colors.pink,
-                Colors.orange,
-                Colors.purple,
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, '/chat'),
@@ -214,6 +273,58 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: const Icon(Icons.auto_awesome),
         backgroundColor: Colors.blueAccent,
         foregroundColor: Colors.white,
+        elevation: 8,
+      ),
+    );
+  }
+
+  Widget _buildAnimatedFeatureCard(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String route,
+    Color color,
+  ) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [color.withOpacity(0.8), color]),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 32),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

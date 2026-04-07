@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
+import 'screens/auth_screen.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
+import 'providers/auth_provider.dart';
+import 'providers/medicine_sync_provider.dart';
 import 'screens/medication_scan_screen.dart';
 import 'screens/document_analysis_screen.dart';
 import 'screens/medical_imaging_screen.dart';
 import 'screens/results_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/medicine_history_screen.dart';
 import 'providers/medical_data_provider.dart';
 import 'package:provider/provider.dart';
 import 'providers/user_profile_provider.dart';
@@ -22,11 +26,19 @@ import 'screens/pharmacy_finder_screen.dart';
 import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_logger.dart';
+import 'services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
+    // Initialize Supabase
+    await SupabaseService.init(
+      supabaseUrl: 'https://gzbunfngfjvxxsjzjabu.supabase.co',
+      supabaseAnonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6YnVuZm5nZmp2eHhzanpqYWJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NjAyOTYsImV4cCI6MjA5MTEzNjI5Nn0.BNxrxIXikLU3HgLcY5gCoCLmpPLPQUuUnfS35k0gpiI',
+    );
+
     final localeProvider = LocaleProvider();
     final themeProvider = ThemeProvider();
 
@@ -60,14 +72,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => MedicineSyncProvider()),
         ChangeNotifierProvider(create: (_) => MedicalDataProvider()),
         ChangeNotifierProvider(create: (_) => UserProfileProvider()),
         ChangeNotifierProvider(create: (_) => ReminderProvider()),
         ChangeNotifierProvider.value(value: initialLocale),
         ChangeNotifierProvider.value(value: initialTheme),
       ],
-      child: Consumer2<ThemeProvider, LocaleProvider>(
-        builder: (context, themeProvider, localeProvider, _) {
+      child: Consumer3<ThemeProvider, LocaleProvider, AuthProvider>(
+        builder: (context, themeProvider, localeProvider, authProvider, _) {
           return FutureBuilder<bool>(
             future: _checkOnboarding(),
             builder: (context, snapshot) {
@@ -86,6 +100,10 @@ class MyApp extends StatelessWidget {
                 );
               }
 
+              // Check if user is signed in and Supabase is initialized
+              final isSignedIn = authProvider.isSignedIn;
+              final supabaseInitialized = authProvider.supabaseInitialized;
+
               return MaterialApp(
                 locale: localeProvider.locale,
                 title: 'AI Medicament Scanner',
@@ -100,10 +118,21 @@ class MyApp extends StatelessWidget {
                 themeMode: themeProvider.themeMode,
                 theme: AppTheme.lightTheme(),
                 darkTheme: AppTheme.darkTheme(),
-                home: snapshot.data == true
-                    ? const HomeScreen()
-                    : const OnboardingScreen(),
+                home: !supabaseInitialized
+                    ? Scaffold(
+                        body: Center(
+                          child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      )
+                    : isSignedIn
+                    ? (snapshot.data == true
+                          ? const HomeScreen()
+                          : const OnboardingScreen())
+                    : const AuthScreen(),
                 routes: {
+                  '/auth': (context) => const AuthScreen(),
                   '/medication-scan': (context) => const MedicationScanScreen(),
                   '/document-analysis': (context) =>
                       const DocumentAnalysisScreen(),
@@ -114,6 +143,8 @@ class MyApp extends StatelessWidget {
                   '/search': (context) => const MedicationSearchScreen(),
                   '/chat': (context) => const ChatScreen(),
                   '/settings': (context) => const SettingsScreen(),
+                  '/medicine-history': (context) =>
+                      const MedicineHistoryScreen(),
                   '/pharmacy': (context) {
                     final args =
                         ModalRoute.of(context)?.settings.arguments as String?;

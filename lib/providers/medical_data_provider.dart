@@ -1,15 +1,21 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
+import '../models/medicine_cache_model.dart';
 import '../services/medical_analyzer_service.dart';
 import '../services/ocr_service.dart';
 import '../services/medical_imaging_service.dart';
 import '../services/storage_service.dart';
+import '../services/medicine_cache_service.dart';
 
 class MedicalDataProvider with ChangeNotifier {
   final MedicalAnalyzerService _analyzerService = MedicalAnalyzerService();
   final OCRService _ocrService = OCRService();
   final StorageService _storage = StorageService();
+  final MedicineCacheService _cacheService = MedicineCacheService();
+
+  bool _cacheHit = false;
+  String? _cacheStatus;
 
   Medication? currentMedication;
   MedicalDocument? currentDocument;
@@ -20,8 +26,22 @@ class MedicalDataProvider with ChangeNotifier {
 
   List<HistoryItem> history = [];
 
+  // Getters for cache status
+  bool get wasCacheHit => _cacheHit;
+  String? get cacheStatus => _cacheStatus;
+
   MedicalDataProvider() {
     _loadHistory();
+    _initializeCache();
+  }
+
+  Future<void> _initializeCache() async {
+    try {
+      await _cacheService.init();
+      debugPrint('[MedicalDataProvider] Cache service initialized');
+    } catch (e) {
+      debugPrint('[MedicalDataProvider] Error initializing cache: $e');
+    }
   }
 
   Future<void> analyzeMedicalImage(String imagePath, String userId) async {
@@ -81,13 +101,50 @@ class MedicalDataProvider with ChangeNotifier {
   Future<void> analyzeMedication(String imagePath, String userId) async {
     _startLoading();
     currentImagePath = imagePath;
+    _cacheHit = false;
+    _cacheStatus = null;
+
     try {
       final text = await _ocrService.extractTextFromImage(imagePath);
+
+      // Check cache first
       currentMedication = await _analyzerService.analyzeMedicationText(text);
-      currentMedication?.imagePath = imagePath;
 
       if (currentMedication != null &&
           currentMedication!.name != "Unknown Medication") {
+        // Check if a similar medicine exists in cache
+        final cachedMedicine = _cacheService.getMedicineByName(
+          currentMedication!.name,
+        );
+
+        if (cachedMedicine != null) {
+          _cacheHit = true;
+          _cacheStatus =
+              'Loaded from cache (${cachedMedicine.scanCount} scans)';
+          debugPrint(
+            '[MedicalDataProvider] Cache hit for: ${currentMedication!.name}',
+          );
+        } else {
+          _cacheStatus = 'New medicine added to cache';
+        }
+
+        // Save to cache with OCR text
+        final medicineCache = MedicineCache(
+          medicineId: currentMedication!.name
+              .replaceAll(' ', '_')
+              .toLowerCase(),
+          medicineName: currentMedication!.name,
+          activeIngredient: currentMedication!.activeIngredient,
+          manufacturer: currentMedication!.manufacturer,
+          lastScannedDate: DateTime.now(),
+          extractedOCRText: text,
+          scanCount: cachedMedicine?.scanCount ?? 1,
+        );
+
+        await _cacheService.addOrUpdateMedicine(medicineCache);
+
+        currentMedication?.imagePath = imagePath;
+
         await _saveHistoryItem(
           HistoryItem(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
