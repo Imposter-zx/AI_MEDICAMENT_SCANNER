@@ -25,7 +25,8 @@ class _MedicalImagingScreenState extends State<MedicalImagingScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('🩺 Medical Imaging',
+        title: const Text(
+          'Medical Imaging',
           style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
         centerTitle: true,

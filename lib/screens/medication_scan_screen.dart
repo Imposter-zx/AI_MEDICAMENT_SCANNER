@@ -21,7 +21,8 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('💊 Medication Scanner',
+        title: const Text(
+          'Medication Scanner',
           style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
         centerTitle: true,
@@ -179,7 +180,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [Colors.green.shade400, Colors.emerald.shade600],
+                            colors: [Colors.green.shade400, Colors.green.shade600],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [

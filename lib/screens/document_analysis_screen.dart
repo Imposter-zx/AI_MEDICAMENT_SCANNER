@@ -22,7 +22,8 @@ class _DocumentAnalysisScreenState extends State<DocumentAnalysisScreen> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('📄 Document Analysis',
+        title: const Text(
+          'Document Analysis',
           style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
         centerTitle: true,
