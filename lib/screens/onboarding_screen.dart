@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -65,39 +66,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _completeOnboarding,
-                child: const Text('Skip'),
-              ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: _pages.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (context, index) => _buildPage(_pages[index]),
-              ),
-            ),
-            _buildDots(),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: SizedBox(
-                width: double.infinity,
-                child: GradientButton(
-                  text: _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
-                  icon: _currentPage == _pages.length - 1 ? Icons.check : Icons.arrow_forward,
-                  onPressed: _nextPage,
+      body: PremiumBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: _completeOnboarding,
+                  child: Text(
+                    'Skip',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-          ],
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _pages.length,
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  itemBuilder: (context, index) => _buildPage(_pages[index]),
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildDots(),
+              const SizedBox(height: 32),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: GradientButton(
+                    text: _currentPage == _pages.length - 1 ? 'Get Started' : 'Next',
+                    icon: _currentPage == _pages.length - 1 ? Icons.check : Icons.arrow_forward,
+                    onPressed: _nextPage,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 48),
+            ],
+          ),
         ),
       ),
     );
@@ -112,32 +122,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             const SizedBox(height: 60),
             Container(
-              width: 100,
-              height: 100,
+              width: 120,
+              height: 120,
               decoration: BoxDecoration(
                 color: page.color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: page.color.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              child: Icon(page.icon, size: 50, color: page.color),
+              child: Icon(page.icon, size: 60, color: page.color),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 48),
             Text(
               page.title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
                 height: 1.2,
+                letterSpacing: -0.5,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Text(
               page.description,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
-                color: Colors.grey[600],
-                height: 1.5,
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                height: 1.6,
               ),
             ),
           ],

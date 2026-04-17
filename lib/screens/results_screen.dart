@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
+import 'dart:io' show File;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/medical_data_provider.dart';
 import '../models/models.dart';
 import '../providers/user_profile_provider.dart';
@@ -9,6 +11,9 @@ import '../services/report_service.dart';
 import '../providers/reminder_provider.dart';
 import '../models/reminder_model.dart';
 import 'package:share_plus/share_plus.dart';
+import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
+import '../l10n/app_localizations.dart';
 
 class ResultsScreen extends StatelessWidget {
   const ResultsScreen({super.key});
@@ -44,21 +49,23 @@ class ResultsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer2<MedicalDataProvider, UserProfileProvider>(
-        builder: (context, provider, profileProvider, child) {
+      body: PremiumBackground(
+        child: Consumer2<MedicalDataProvider, UserProfileProvider>(
+          builder: (context, provider, profileProvider, child) {
+          final l10n = AppLocalizations.of(context);
           Widget content;
-          String title = "Analysis Results";
+          String title = l10n.results;
           if (provider.currentMedication != null) {
             content = _buildMedicationResult(context, provider, profileProvider);
-            title = "Medication Info";
+            title = l10n.medicationScanner;
           } else if (provider.currentDocument != null) {
             content = _buildDocumentResult(context, provider);
-            title = "Document Analysis";
+            title = l10n.documentAnalysis;
           } else if (provider.currentImagingResult != null) {
             content = _buildImagingResult(context, provider);
-            title = "Imaging Insights";
+            title = l10n.medicalImaging;
           } else {
-            content = const Center(child: Text('No results to display'));
+            content = Center(child: Text(l10n.done));
           }
 
           return CustomScrollView(
@@ -73,26 +80,24 @@ class ResultsScreen extends StatelessWidget {
                 actions: [
                   IconButton(
                     icon: const Icon(Icons.share),
-                    tooltip: 'Share',
+                    tooltip: l10n.share,
                     onPressed: () {
                       final summary = _getShareSummary(provider);
                       if (summary.isNotEmpty) {
-                        Share.share(summary, subject: 'AI Medicament Scanner - Results');
+                        Share.share(summary, subject: '${l10n.appTitle} - ${l10n.results}');
                       }
                     },
                   ),
                   IconButton(
                     icon: const Icon(Icons.picture_as_pdf),
-                    tooltip: 'Export Report',
+                    tooltip: l10n.export,
                     onPressed: () {
-                      if (provider.currentMedication != null) {
+                      final res = provider.currentMedication ?? provider.currentDocument ?? provider.currentImagingResult;
+                      if (res != null) {
                         ReportService().generateAndShareReport(
-                          provider.currentMedication!, 
-                          profileProvider.activeProfile
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Report generation is currently only available for Medication scans.')),
+                          result: res,
+                          l10n: l10n,
+                          profile: profileProvider.activeProfile,
                         );
                       }
                     },
@@ -105,10 +110,12 @@ class ResultsScreen extends StatelessWidget {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMedicationResult(BuildContext context, MedicalDataProvider provider, UserProfileProvider profileProvider) {
+    final l10n = AppLocalizations.of(context);
     final med = provider.currentMedication!;
     List<String> safetyConflicts = [];
     
@@ -130,8 +137,8 @@ class ResultsScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (provider.currentImagePath != null)
-            _buildImageCard(provider.currentImagePath!),
+          if (provider.currentImagePath != null || provider.currentImageBytes != null)
+            _buildImageCard(context, provider),
           const SizedBox(height: 24),
           
           if (safetyConflicts.isNotEmpty)
@@ -143,7 +150,7 @@ class ResultsScreen extends StatelessWidget {
           _buildResultHeader(
             context, 
             med.name, 
-            med.activeIngredient ?? "General Medication", 
+            med.activeIngredient ?? l10n.medicationScanner, 
             Icons.medication,
             Colors.blue,
           ),
@@ -152,31 +159,31 @@ class ResultsScreen extends StatelessWidget {
           _buildActionButtons(context, med),
           const SizedBox(height: 32),
           
-          _buildInfoSection(context, 'Indications', med.usedFor, Icons.medication),
-          _buildInfoSection(context, 'Usage', med.whenToUse, Icons.access_time),
-          _buildDangerSection(context, 'Contraindications', med.contraindications),
+          _buildInfoSection(context, l10n.indications, med.usedFor, Icons.medication),
+          _buildInfoSection(context, l10n.usageInstructions, med.whenToUse, Icons.access_time),
+          _buildDangerSection(context, l10n.contraindications, med.contraindications),
           
           if (med.dosage != null)
             _buildPremiumInfoBox(
               context,
-              'Dosage Guidance',
+              l10n.dosageGuidance,
               med.dosage!,
               Icons.healing,
               Colors.orange,
             ),
           
-          _buildInfoSection(context, 'Side Effects', med.sideEffects, Icons.warning_amber),
+          _buildInfoSection(context, l10n.sideEffects, med.sideEffects, Icons.warning_amber),
           
           _buildPremiumInfoBox(
             context,
-            'Simple Explanation',
+            l10n.simpleExplanation,
             med.simpleExplanation,
             Icons.psychology,
             Colors.purple,
           ),
           
           if (med.requiresPrescription)
-            _buildWarningBanner(context, 'Prescription Required', 'This medication must only be used under professional medical supervision.'),
+            _buildWarningBanner(context, l10n.safetyAlerts, l10n.disclaimerText),
           
           const SizedBox(height: 24),
           _buildDisclaimerCard(context),
@@ -192,7 +199,7 @@ class ResultsScreen extends StatelessWidget {
           child: ElevatedButton.icon(
             onPressed: () => _showSetReminderDialog(context, med),
             icon: const Icon(Icons.alarm_add),
-            label: const Text('Set Reminder'),
+            label: Text(AppLocalizations.of(context).setReminder),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -208,7 +215,7 @@ class ResultsScreen extends StatelessWidget {
               Navigator.pushNamed(context, '/pharmacy', arguments: med.name);
             },
             icon: const Icon(Icons.local_pharmacy_outlined),
-            label: const Text('Find Pharmacy'),
+            label: Text(AppLocalizations.of(context).findPharmacy),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 12),
               side: const BorderSide(color: Colors.blue),
@@ -221,20 +228,21 @@ class ResultsScreen extends StatelessWidget {
   }
 
   Widget _buildDocumentResult(BuildContext context, MedicalDataProvider provider) {
+    final l10n = AppLocalizations.of(context);
     final doc = provider.currentDocument!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (provider.currentImagePath != null)
-            _buildImageCard(provider.currentImagePath!),
+          if (provider.currentImagePath != null || provider.currentImageBytes != null)
+            _buildImageCard(context, provider),
           const SizedBox(height: 24),
           
           _buildResultHeader(
             context, 
             doc.documentType.replaceAll('_', ' ').toUpperCase(), 
-            "Medical Analysis", 
+            AppLocalizations.of(context).detailedAnalysis, 
             Icons.description,
             Colors.teal,
           ),
@@ -244,9 +252,9 @@ class ResultsScreen extends StatelessWidget {
             _buildFindingsSection(context, doc.keyFindings),
           
           if (doc.abnormalValues.isNotEmpty)
-            _buildDangerSection(context, '⚠️ Abnormal Values Detected', doc.abnormalValues),
+            _buildDangerSection(context, '⚠️ ${AppLocalizations.of(context).abnormalValues}', doc.abnormalValues),
           
-          _buildInfoSection(context, '💡 Recommendations', doc.recommendations, Icons.lightbulb_outline),
+          _buildInfoSection(context, '💡 ${AppLocalizations.of(context).recommendations}', doc.recommendations, Icons.lightbulb_outline),
           
           const SizedBox(height: 24),
           _buildDisclaimerCard(context),
@@ -256,14 +264,15 @@ class ResultsScreen extends StatelessWidget {
   }
 
   Widget _buildImagingResult(BuildContext context, MedicalDataProvider provider) {
+    final l10n = AppLocalizations.of(context);
     final imaging = provider.currentImagingResult!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (provider.currentImagePath != null)
-            _buildImageCard(provider.currentImagePath!),
+          if (provider.currentImagePath != null || provider.currentImageBytes != null)
+            _buildImageCard(context, provider),
           const SizedBox(height: 24),
           
           _buildResultHeader(
@@ -275,13 +284,13 @@ class ResultsScreen extends StatelessWidget {
           ),
           
           const SizedBox(height: 24),
-          _buildPremiumInfoBox(context, 'Assessment', imaging.description, Icons.visibility, Colors.indigo),
-          _buildInfoSection(context, 'Observations', imaging.observedAreas, Icons.search),
+          _buildPremiumInfoBox(context, AppLocalizations.of(context).assessment, imaging.description, Icons.visibility, Colors.indigo),
+          _buildInfoSection(context, AppLocalizations.of(context).observations, imaging.observedAreas, Icons.search),
           
           if (imaging.areasOfInterest.isNotEmpty)
-            _buildDangerSection(context, '⚠️ Areas for Review', imaging.areasOfInterest),
+            _buildDangerSection(context, '⚠️ ${AppLocalizations.of(context).keyFindings}', imaging.areasOfInterest),
           
-          _buildPremiumInfoBox(context, 'Explanation', imaging.simpleExplanation, Icons.help_outline, Colors.blueGrey),
+          _buildPremiumInfoBox(context, AppLocalizations.of(context).simpleExplanation, imaging.simpleExplanation, Icons.help_outline, Colors.blueGrey),
           
           const SizedBox(height: 24),
           _buildDisclaimerCard(context),
@@ -313,10 +322,10 @@ class ResultsScreen extends StatelessWidget {
                 child: const Icon(Icons.privacy_tip, color: Colors.white, size: 20),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'HIGH-PRIORITY SAFETY ALERT',
-                  style: TextStyle(
+                  AppLocalizations.of(context).safetyAlerts.toUpperCase(),
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
@@ -366,10 +375,10 @@ class ResultsScreen extends StatelessWidget {
               children: [
                 Icon(Icons.info_outline, size: 14, color: Colors.red.shade900),
                 const SizedBox(width: 8),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'This is matched against your active health profile.',
-                    style: TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
+                    AppLocalizations.of(context).safetyReminder,
+                    style: const TextStyle(color: Colors.red, fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -380,7 +389,7 @@ class ResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImageCard(String path) {
+  Widget _buildImageCard(BuildContext context, MedicalDataProvider provider) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -394,12 +403,19 @@ class ResultsScreen extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24),
-        child: Image.file(
-          File(path),
-          height: 240,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
+        child: kIsWeb && provider.currentImageBytes != null
+            ? Image.memory(
+                provider.currentImageBytes!,
+                height: 240,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              )
+            : Image.file(
+                File(provider.currentImagePath!),
+                height: 240,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
@@ -408,17 +424,14 @@ class ResultsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.8), color],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: color.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -427,10 +440,10 @@ class ResultsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: color.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: Colors.white, size: 32),
+            child: Icon(icon, color: color, size: 32),
           ),
           const SizedBox(width: 20),
           Expanded(
@@ -439,17 +452,19 @@ class ResultsScreen extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: color,
                     fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: color.withValues(alpha: 0.7),
                     fontSize: 14,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -475,18 +490,25 @@ class ResultsScreen extends StatelessWidget {
           ),
         ),
         ...items.map((item) => Container(
-          margin: const EdgeInsets.only(bottom: 8),
+          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+            color: Colors.white.withValues(alpha: 0.4),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
           ),
           child: Row(
             children: [
-              const Icon(Icons.circle, size: 6, color: Colors.blue),
-              const SizedBox(width: 12),
-              Expanded(child: Text(item, style: const TextStyle(fontSize: 15))),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(child: Text(item, style: const TextStyle(fontSize: 14, height: 1.5))),
             ],
           ),
         )),
@@ -499,9 +521,9 @@ class ResultsScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 4, bottom: 12),
-          child: Text('📊 Key Findings', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Padding(
+          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          child: Text('📊 ${AppLocalizations.of(context).keyFindings}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         ),
         ...findings.map((finding) => Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -625,21 +647,20 @@ class ResultsScreen extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.gavel, size: 18, color: Colors.grey),
-              SizedBox(width: 8),
-              Text('Medical Disclaimer', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+              const Icon(Icons.gavel, size: 18, color: Colors.grey),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context).medicalDisclaimer, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             ],
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'This report is generated for educational purposes only. It is not a clinical diagnosis. '
-            'Always consult with a qualified medical professional before making any health decisions.',
-            style: TextStyle(fontSize: 11, color: Colors.grey),
+            AppLocalizations.of(context).disclaimerText,
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
           ),
         ],
       ),

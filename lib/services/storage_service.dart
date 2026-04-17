@@ -8,9 +8,7 @@ class StorageService {
   factory StorageService() => _instance;
   StorageService._internal();
 
-  final FlutterSecureStorage _secure = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
-  );
+  final FlutterSecureStorage _secure = const FlutterSecureStorage();
 
   static const String _keyProfiles = 'user_profiles';
   static const String _keyActiveProfile = 'active_profile_id';

@@ -19,6 +19,7 @@ class BackupService {
       final file = File('${dir.path}/mediscanner_backup_${DateTime.now().millisecondsSinceEpoch}.json');
       await file.writeAsString(data);
 
+      // ignore: deprecated_member_use
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'AI Medicament Scanner - Data Backup',
@@ -34,7 +35,7 @@ class BackupService {
 
   Future<bool> importFromFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json'],
       );

@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'ai_cache_service.dart';
 
 class OpenAIChatService {
   static final OpenAIChatService _instance = OpenAIChatService._internal();
@@ -13,6 +14,7 @@ class OpenAIChatService {
   OpenAIChatService._internal();
 
   final FlutterSecureStorage _secure = const FlutterSecureStorage();
+  final AICacheService _cacheService = AICacheService();
 
   static const String _apiKeyKey = 'openai_api_key';
 
@@ -28,8 +30,12 @@ class OpenAIChatService {
     if (kIsWeb) {
       throw UnsupportedError('OpenAI chat is not supported on web in this MVP.');
     }
+
+    // Check Cache first
+    final cached = await _cacheService.getCachedResponse(userMessage);
+    if (cached != null) return cached;
     final apiKey = await getApiKey();
-    if (apiKey == null || apiKey!.isEmpty) {
+    if (apiKey == null || apiKey.isEmpty) {
       throw Exception('OpenAI API key is not configured. Please add it in Settings.');
     }
 
@@ -80,6 +86,11 @@ class OpenAIChatService {
 
     final data = jsonDecode(resp.body) as Map<String, dynamic>;
     final String content = (data['choices']?.first?['message']?['content'] ?? '') as String;
-    return content.trim();
+    final cleanResponse = content.trim();
+    
+    // Save to Cache
+    await _cacheService.saveResponse(userMessage, cleanResponse);
+    
+    return cleanResponse;
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:confetti/confetti.dart';
@@ -7,6 +8,9 @@ import '../providers/reminder_provider.dart';
 import '../models/reminder_model.dart';
 import '../models/models.dart';
 import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
+import '../l10n/app_localizations.dart';
+import '../theme/app_theme.dart';
 import 'pharmacy_finder_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -77,9 +81,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'AI Medical Assistant',
-          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
+        title: Text(
+          AppLocalizations.of(context).appTitle.toUpperCase(),
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+            fontSize: 16,
+            letterSpacing: 2.0,
+            color: Color(0xFF1E3A8A),
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -95,18 +104,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade50,
-              Colors.indigo.shade50,
-              Colors.purple.shade50,
-            ],
-          ),
-        ),
+      body: PremiumBackground(
         child: Stack(
           children: [
             SingleChildScrollView(
@@ -131,79 +129,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Quick Access',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.grey.shade800,
-                                letterSpacing: 0.5,
+                              AppLocalizations.of(context).quickAccess,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            SizedBox(
-                              height: 140,
-                              child: SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 100,
-                                      child: _buildAnimatedFeatureCard(
-                                        context,
-                                        Icons.camera_alt,
-                                        'Scan',
-                                        '/medication-scan',
-                                        Colors.blue,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 100,
-                                      child: _buildAnimatedFeatureCard(
-                                        context,
-                                        Icons.description,
-                                        'Docs',
-                                        '/document-analysis',
-                                        Colors.orange,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 100,
-                                      child: _buildAnimatedFeatureCard(
-                                        context,
-                                        Icons.image_search,
-                                        'Imaging',
-                                        '/medical-imaging',
-                                        Colors.teal,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 100,
-                                      child: _buildAnimatedFeatureCard(
-                                        context,
-                                        Icons.analytics,
-                                        'Trends',
-                                        '/trends',
-                                        Colors.purple,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 100,
-                                      child: _buildAnimatedFeatureCard(
-                                        context,
-                                        Icons.search,
-                                        'Search',
-                                        '/search',
-                                        Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                            _buildQuickAccess(context),
                           ],
                         ),
                       ),
@@ -219,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Recent Analyses',
+                          AppLocalizations.of(context).recentAnalyses,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -234,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               builder: (ctx) => PharmacyFinderScreen(),
                             ),
                           ),
-                          child: const Text('View All'),
+                          child: Text(AppLocalizations.of(context).viewAll),
                         ),
                       ],
                     ),
@@ -266,8 +199,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, '/chat'),
-        label: const Text(
-          'AI Assistant',
+        label: Text(
+          AppLocalizations.of(context).aiAssistant,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         icon: const Icon(Icons.auto_awesome),
@@ -278,56 +211,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildAnimatedFeatureCard(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String route,
-    Color color,
-  ) {
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [color.withOpacity(0.8), color]),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.4),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: Colors.white, size: 32),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildHeader(BuildContext context) {
     return Consumer<UserProfileProvider>(
@@ -335,13 +219,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final profile = profileProvider.activeProfile;
         final name = profile?.name ?? "Guest";
         final hour = DateTime.now().hour;
-        String greetingPrefix = "Good Morning";
-        if (hour >= 12 && hour < 17) greetingPrefix = "Good Afternoon";
-        if (hour >= 17) greetingPrefix = "Good Evening";
+        final l10n = AppLocalizations.of(context);
+        String greetingPrefix = l10n.goodMorning;
+        if (hour >= 12 && hour < 17) greetingPrefix = l10n.goodAfternoon;
+        if (hour >= 17) greetingPrefix = l10n.goodEvening;
 
         return Container(
           width: double.infinity,
-          height: 180,
+          height: 200,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(24),
             image: const DecorationImage(
@@ -350,9 +235,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
@@ -361,11 +246,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               borderRadius: BorderRadius.circular(24),
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withValues(alpha: 0.6),
+                  Colors.black.withValues(alpha: 0.7),
                   Colors.transparent,
                 ],
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
               ),
             ),
             padding: const EdgeInsets.all(24),
@@ -374,38 +259,51 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text(
-                  '$greetingPrefix,\n$name',
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
+                  greetingPrefix,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      profile != null
-                          ? Icons.verified_user
-                          : Icons.help_outline,
-                      color: profile != null
-                          ? Colors.greenAccent
-                          : Colors.orangeAccent,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      profile != null
-                          ? 'Health Profile Active'
-                          : 'Set up your health profile',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.white.withValues(alpha: 0.9),
-                        letterSpacing: 0.5,
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        profile != null ? Icons.verified : Icons.info_outline,
+                        color: Colors.white,
+                        size: 14,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        profile != null
+                            ? l10n.healthProfileActive
+                            : l10n.setUpProfile,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -415,9 +313,74 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildQuickAccess(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildFeatureCard(context, Icons.camera_alt, l10n.scan, '/medication-scan', Colors.blue),
+          const SizedBox(width: 12),
+          _buildFeatureCard(context, Icons.description, l10n.docs, '/document-analysis', Colors.orange),
+          const SizedBox(width: 12),
+          _buildFeatureCard(context, Icons.image_search, l10n.imaging, '/medical-imaging', Colors.teal),
+          const SizedBox(width: 12),
+          _buildFeatureCard(context, Icons.analytics, l10n.trends, '/trends', Colors.purple),
+          const SizedBox(width: 12),
+          _buildFeatureCard(context, Icons.search, l10n.search, '/search', Colors.green),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureCard(BuildContext context, IconData icon, String label, String route, Color color) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Container(
+        width: 110,
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfileSwitcher(BuildContext context) {
     return Consumer<UserProfileProvider>(
       builder: (context, profileProvider, child) {
+        final l10n = AppLocalizations.of(context);
         final profiles = profileProvider.profiles;
         final activeId = profileProvider.activeProfileId;
 
@@ -425,9 +388,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            const Text(
-              'Family Health Profiles',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Text(
+              AppLocalizations.of(context).familyProfiles,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -462,24 +429,26 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             child: CircleAvatar(
                               radius: 28,
-                              backgroundColor: Colors.blue.withValues(
-                                alpha: 0.1,
-                              ),
+                              backgroundColor: isActive
+                                  ? Colors.blue.withValues(alpha: 0.2)
+                                  : Colors.white.withValues(alpha: 0.5),
                               child: Text(
                                 profile.name.isNotEmpty
                                     ? profile.name[0].toUpperCase()
                                     : '?',
                                 style: TextStyle(
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
                                   fontSize: 18,
-                                  color: isActive ? Colors.blue : Colors.grey,
+                                  color: isActive
+                                      ? Colors.blue
+                                      : Colors.grey.shade600,
                                 ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            profile.relation == 'Self' ? 'Me' : profile.name,
+                            profile.relation == 'Self' ? l10n.me : profile.name,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: isActive
@@ -515,8 +484,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Add New',
+            Text(
+            AppLocalizations.of(context).addNew,
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],
@@ -591,98 +560,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildSmallFeatureCard(
-    BuildContext context,
-    String assetPath,
-    String title,
-    String route,
-  ) {
-    // Map titles to Material Design icons and colors
-    IconData icon;
-    Color iconColor;
-    Color backgroundColor;
 
-    switch (title) {
-      case 'Scan':
-        icon = Icons.qr_code_scanner;
-        iconColor = Colors.blue;
-        backgroundColor = Colors.blue.withValues(alpha: 0.1);
-        break;
-      case 'Docs':
-        icon = Icons.description_outlined;
-        iconColor = Colors.amber;
-        backgroundColor = Colors.amber.withValues(alpha: 0.1);
-        break;
-      case 'Imaging':
-        icon = Icons.health_and_safety_outlined;
-        iconColor = Colors.purple;
-        backgroundColor = Colors.purple.withValues(alpha: 0.1);
-        break;
-      default:
-        icon = Icons.apps;
-        iconColor = Colors.grey;
-        backgroundColor = Colors.grey.withValues(alpha: 0.1);
-    }
-
-    return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, route),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [backgroundColor, backgroundColor.withValues(alpha: 0.5)],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: iconColor.withValues(alpha: 0.2),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: iconColor.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => Navigator.pushNamed(context, route),
-            borderRadius: BorderRadius.circular(16),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: iconColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 32),
-                ),
-                const SizedBox(height: 8),
-                Flexible(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                      color: iconColor,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSafetyAlerts(BuildContext context) {
     return Consumer<ReminderProvider>(
@@ -700,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Row(
+              Row(
                 children: [
                   Icon(
                     Icons.report_problem_rounded,
@@ -709,7 +587,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   SizedBox(width: 12),
                   Text(
-                    'Safety Alerts Detected',
+                    AppLocalizations.of(context).safetyAlerts,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -746,8 +624,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
-                'IMPORTANT: Please consult your doctor immediately regarding these combinations.',
+              Text(
+                AppLocalizations.of(context).consultDoctor,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -769,8 +647,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Active Medications',
+            Text(
+              AppLocalizations.of(context).activeMedications,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             IconButton(

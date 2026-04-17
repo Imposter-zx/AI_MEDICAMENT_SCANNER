@@ -1,15 +1,13 @@
 import '../models/models.dart';
-import 'EXTENDED_MEDICATIONS_DATABASE.dart';
+import 'extended_medications_database.dart';
 
 class MedicalAnalyzerService {
   // Mock medication data
   final Map<String, Medication> _medicationDB = medications;
 
   Future<Medication> analyzeMedicationText(String text) async {
-    // Simulate process delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    final normalizedText = text.toLowerCase().replaceAll(RegExp(r'[^a-z0-0\s]'), '');
+    // Normalise text: lowercase, strip non-alphanumeric characters (fixed range: 0-9 not 0-0)
+    final normalizedText = text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), '');
     
     // Fuzzy matching: check for brand names and generic names
     for (final entry in _medicationDB.entries) {
@@ -39,7 +37,7 @@ class MedicalAnalyzerService {
   }
 
   Future<MedicalDocument> analyzeDocument(String text) async {
-    await Future.delayed(const Duration(seconds: 2));
+
 
     final normalizedText = text.toLowerCase();
     String type = "medical_document";

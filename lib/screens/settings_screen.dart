@@ -10,6 +10,8 @@ import '../providers/reminder_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../services/analytics_service.dart';
 import '../services/backup_service.dart';
+import '../services/ai_cache_service.dart';
+import '../widgets/premium_background.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -93,28 +95,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings'), centerTitle: true),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildSectionTitle('Appearance'),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, _) =>
-                _buildThemeSelector(themeProvider),
-          ),
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).settings),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: PremiumBackground(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          children: [
+            _buildSectionTitle(AppLocalizations.of(context).appearance),
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, _) =>
+                  _buildThemeSelector(themeProvider),
+            ),
           const SizedBox(height: 8),
           Consumer<LocaleProvider>(
             builder: (context, localeProvider, _) =>
                 _buildLanguageSelector(localeProvider),
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('Notifications'),
+          _buildSectionTitle(AppLocalizations.of(context).notifications),
           _buildNotificationToggle(),
           const SizedBox(height: 24),
-          _buildSectionTitle('Data & Privacy'),
+          _buildSectionTitle(AppLocalizations.of(context).dataPrivacy),
           _buildDataSection(),
           const SizedBox(height: 24),
-          _buildSectionTitle('Analytics'),
+          _buildSectionTitle(AppLocalizations.of(context).usageAnalytics),
           _buildAnalyticsToggle(),
           if (_analyticsEnabled) ...[
             const SizedBox(height: 8),
@@ -194,13 +203,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          _buildSectionTitle('About'),
+          _buildSectionTitle(AppLocalizations.of(context).about),
           _buildAboutSection(),
           const SizedBox(height: 40),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionTitle(String title) {
     return Padding(
@@ -292,12 +302,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
           RadioListTile<String>(
             title: const Row(
               children: [
-                Text('\u{1FEB}\u{1F1F7}'),
+                Text('\u{1F1EB}\u{1F1F7}'),
                 SizedBox(width: 12),
                 Text('Français (French)'),
               ],
             ),
             value: 'fr',
+            groupValue: localeProvider.locale.languageCode,
+            onChanged: (v) => localeProvider.setLanguageCode(v!),
+          ),
+          RadioListTile<String>(
+            title: const Row(
+              children: [
+                Text('\u{1F1F1}\u{1F1F8}'),
+                SizedBox(width: 12),
+                Text('Español (Spanish)'),
+              ],
+            ),
+            value: 'es',
+            groupValue: localeProvider.locale.languageCode,
+            onChanged: (v) => localeProvider.setLanguageCode(v!),
+          ),
+          RadioListTile<String>(
+            title: const Row(
+              children: [
+                Text('\u{1F1E9}\u{1F1EA}'),
+                SizedBox(width: 12),
+                Text('Deutsch (German)'),
+              ],
+            ),
+            value: 'de',
             groupValue: localeProvider.locale.languageCode,
             onChanged: (v) => localeProvider.setLanguageCode(v!),
           ),
@@ -307,13 +341,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildNotificationToggle() {
+    final l10n = AppLocalizations.of(context);
     return Card(
       child: SwitchListTile(
-        title: const Text('Medication Reminders'),
+        title: Text(l10n.medicationReminders),
         subtitle: Text(
           _notificationsEnabled
-              ? 'Notifications enabled'
-              : 'Notifications disabled',
+              ? l10n.notificationsEnabled
+              : l10n.notificationsDisabled,
         ),
         secondary: Icon(
           _notificationsEnabled
@@ -393,6 +428,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Clear All Data'),
             subtitle: const Text('Delete all profiles, reminders, and history'),
             onTap: () => _showClearDataDialog(),
+          ),
+        ),
+        Card(
+          child: ListTile(
+            leading: const Icon(Icons.memory, color: Colors.blue),
+            title: const Text('Clear AI Cache'),
+            subtitle: const Text('Remove cached AI responses to save space'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () async {
+              await AICacheService().clearCache();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('AI Cache cleared successfully!'),
+                    backgroundColor: Colors.blue,
+                  ),
+                );
+              }
+            },
           ),
         ),
       ],
@@ -527,8 +581,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () async {
               await BackupService().clearAllData();
-              if (mounted) {
-                Navigator.pop(ctx);
+              if (!context.mounted) return;
+              Navigator.pop(ctx);
                 context.read<UserProfileProvider>().clearAll();
                 context.read<ReminderProvider>().clearAll();
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -537,7 +591,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     backgroundColor: Colors.orange,
                   ),
                 );
-              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:collection/collection.dart';
 import 'pharmacy_service.dart';
 
 class PharmacyApiService {

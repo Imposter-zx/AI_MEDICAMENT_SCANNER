@@ -8,14 +8,12 @@ class MedicineCacheService {
   static const String _cacheFileName = 'medicine_cache.json';
   late Directory _appDocsDir;
   List<MedicineCache> _cache = [];
-  bool _initialized = false;
 
   // Initialize cache from file
   Future<void> init() async {
     try {
       _appDocsDir = await getApplicationDocumentsDirectory();
       await _loadCacheFromFile();
-      _initialized = true;
       debugPrint(
         '[MedicineCache] Initialized with ${_cache.length} cached medicines',
       );

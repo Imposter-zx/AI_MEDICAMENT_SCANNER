@@ -12,8 +12,8 @@ class NotificationService {
 
   Future<void> init() async {
     tz.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
+    final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
 
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -30,7 +30,7 @@ class NotificationService {
     );
 
     await _notificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (details) {
         // Handle notification tap
       },
@@ -59,11 +59,11 @@ class NotificationService {
 
       final int uniqueId = id * 10 + d; // ensure unique IDs per day
       await _notificationsPlugin.zonedSchedule(
-        uniqueId,
-        title,
-        body,
-        scheduledDate,
-        const NotificationDetails(
+        id: uniqueId,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'medication_reminders',
             'Medication Reminders',
@@ -73,14 +73,14 @@ class NotificationService {
           ),
           iOS: DarwinNotificationDetails(),
         ),
-        androidAllowWhileIdle: true,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
       );
     }
   }
 
   Future<void> cancelReminder(int id) async {
-    await _notificationsPlugin.cancel(id);
+    await _notificationsPlugin.cancel(id: id);
   }
 
   Future<void> cancelAllReminders() async {

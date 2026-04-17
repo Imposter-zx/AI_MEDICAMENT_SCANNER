@@ -1,6 +1,5 @@
 import 'package:ai_medicament_scanner/data/pharmacy_repository_impl.dart';
-import 'package:ai_medicament_scanner/domain/repositories/pharmacy_repository.dart';
-import 'package:test/test.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('PharmacyRepository production path', () {

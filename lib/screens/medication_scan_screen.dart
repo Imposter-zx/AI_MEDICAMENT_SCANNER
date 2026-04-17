@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
+import 'dart:io' show File;
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../l10n/app_localizations.dart';
+import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
 
 class MedicationScanScreen extends StatefulWidget {
   const MedicationScanScreen({super.key});
@@ -15,32 +20,22 @@ class MedicationScanScreen extends StatefulWidget {
 class _MedicationScanScreenState extends State<MedicationScanScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   File? _selectedImage;
+  Uint8List? _webImageBytes;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Medication Scanner',
-          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
+        title: Text(
+          AppLocalizations.of(context).medicationScanner,
+          style: const TextStyle(fontWeight: FontWeight.w700, letterSpacing: 0.5),
         ),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade50,
-              Colors.indigo.shade50,
-              Colors.purple.shade50,
-            ],
-          ),
-        ),
+      body: PremiumBackground(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 100, 16, 24),
@@ -48,54 +43,34 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Instructions Card
-                Container(
+                GlassCard(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.blue.shade400, Colors.indigo.shade400],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.blue.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
+                  height: 120, // Reduced from implicit height to fit cleanly
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                          ),
+                          Icon(Icons.camera_alt, color: Theme.of(context).colorScheme.primary, size: 20),
                           const SizedBox(width: 12),
-                          const Text(
-                            'How to use:',
+                          Text(
+                            AppLocalizations.of(context).howToUse,
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
-                              color: Colors.white,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 8),
                       const Text(
                         '1. Take a photo or upload an image of the medication box\n'
-                        '2. Make sure the label is clear and readable\n'
-                        '3. Tap "Analyze" to get detailed information',
+                        '2. Make sure the label is clear and readable',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.white,
-                          height: 1.6,
+                          height: 1.4,
                         ),
                       ),
                     ],
@@ -113,27 +88,29 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                       gradient: _selectedImage == null
                           ? LinearGradient(
                               colors: [
-                                Colors.purple.shade100,
-                                Colors.indigo.shade100,
+                                Colors.purple.shade100.withValues(alpha: 0.5),
+                                Colors.indigo.shade100.withValues(alpha: 0.5),
                               ],
                             )
                           : null,
                       borderRadius: BorderRadius.circular(16),
                       border: _selectedImage == null
-                          ? Border.all(color: Colors.purple.shade300, width: 2)
+                          ? Border.all(color: Colors.purple.shade300.withValues(alpha: 0.5), width: 2)
                           : null,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withOpacity(0.2),
+                          color: Colors.purple.withValues(alpha: 0.1),
                           blurRadius: 16,
                           offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: _selectedImage != null
+                    child: _selectedImage != null || _webImageBytes != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(16),
-                            child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                            child: kIsWeb
+                                ? Image.memory(_webImageBytes!, fit: BoxFit.cover)
+                                : Image.file(_selectedImage!, fit: BoxFit.cover),
                           )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -141,7 +118,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                               Container(
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.purple.shade200.withOpacity(0.5),
+                                  color: Colors.purple.shade200.withValues(alpha: 0.3),
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Icon(
@@ -152,7 +129,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'Tap to select medication image',
+                                AppLocalizations.of(context).selectImage,
                                 style: TextStyle(
                                   color: Colors.purple.shade700,
                                   fontWeight: FontWeight.w600,
@@ -161,7 +138,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Camera or Gallery',
+                                AppLocalizations.of(context).cameraOrGallery,
                                 style: TextStyle(
                                   color: Colors.purple.shade500,
                                   fontSize: 12,
@@ -174,89 +151,41 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                 const SizedBox(height: 20),
 
                 // Action Buttons
-                if (_selectedImage != null)
+                if (_selectedImage != null || _webImageBytes != null)
                   Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.green.shade400, Colors.green.shade600],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.green.withOpacity(0.4),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: _analyzeMedication,
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.search, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Analyze Medication',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                      SizedBox(
+                        width: double.infinity,
+                        child: GradientButton(
+                          text: AppLocalizations.of(context).analyzeMedication,
+                          icon: Icons.search,
+                          onPressed: _analyzeMedication,
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                      SizedBox(
+                        width: double.infinity,
+                        child: TextButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              _selectedImage = null;
+                              _webImageBytes = null;
+                            });
+                          },
+                          icon: const Icon(Icons.refresh, color: Colors.grey),
+                          label: Text(
+                            AppLocalizations.of(context).clearImage,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
                             ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              setState(() {
-                                _selectedImage = null;
-                              });
-                            },
-                            borderRadius: BorderRadius.circular(12),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Icon(Icons.refresh, color: Colors.grey),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Clear Image',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              side: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
                             ),
                           ),
                         ),
@@ -273,11 +202,11 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                       return Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).cardColor.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withValues(alpha: 0.05),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -291,11 +220,11 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'Analyzing medication...',
+                              AppLocalizations.of(context).analyzing,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey.shade700,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                           ],
@@ -318,7 +247,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.red.shade200.withOpacity(0.3),
+                                color: Colors.red.shade200.withValues(alpha: 0.3),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(Icons.error_outline, color: Colors.red.shade600, size: 20),
@@ -355,7 +284,8 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
                     return const SizedBox.shrink();
                   },
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -371,7 +301,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
           children: [
             ListTile(
               leading: const Icon(Icons.camera),
-              title: const Text('Take a Photo'),
+              title: Text(AppLocalizations.of(context).takePhoto),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.camera);
@@ -379,7 +309,7 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_library),
-              title: const Text('Choose from Gallery'),
+              title: Text(AppLocalizations.of(context).chooseGallery),
               onTap: () {
                 Navigator.pop(context);
                 _pickImage(ImageSource.gallery);
@@ -395,9 +325,18 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
     try {
       final XFile? pickedFile = await _imagePicker.pickImage(source: source);
       if (pickedFile != null) {
-        setState(() {
-          _selectedImage = File(pickedFile.path);
-        });
+        if (kIsWeb) {
+          final bytes = await pickedFile.readAsBytes();
+          setState(() {
+            _webImageBytes = bytes;
+            _selectedImage = null; // Ensure File is null on web
+          });
+        } else {
+          setState(() {
+            _selectedImage = File(pickedFile.path);
+            _webImageBytes = null;
+          });
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -407,12 +346,17 @@ class _MedicationScanScreenState extends State<MedicationScanScreen> {
   }
 
   Future<void> _analyzeMedication() async {
-    if (_selectedImage == null) return;
+    if (_selectedImage == null && _webImageBytes == null) return;
 
     final provider = context.read<MedicalDataProvider>();
     final profileProvider = context.read<UserProfileProvider>();
     final userId = profileProvider.activeProfileId ?? 'default';
-    await provider.analyzeMedication(_selectedImage!.path, userId);
+    
+    await provider.analyzeMedication(
+      _selectedImage?.path ?? 'web_image',
+      userId,
+      bytes: _webImageBytes,
+    );
 
     if (mounted && provider.currentMedication != null) {
       Navigator.pushNamed(context, '/results');

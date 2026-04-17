@@ -1,6 +1,6 @@
 # 🏥 AI Medicament Scanner
 
-> **AI-powered mobile health assistant** — scan medications, analyze medical documents, and get insights from medical images. Built with Flutter.
+> **AI-powered cross-platform health assistant** — scan medications, analyze medical documents, and get insights from medical images. Fully optimized for Mobile and Web. Built with Flutter.
 
 ![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
@@ -15,10 +15,11 @@
 
 | Feature | Description |
 |---|---|
-| 💊 **Medication Scanner** | Scan medication boxes via camera or gallery; get usage info, dosage, side effects & contraindications |
-| 📄 **Document Analysis** | Upload prescriptions, lab reports, blood work; extracts key findings and abnormal values |
-| 🩻 **Medical Imaging** | Analyze X-rays, CT scans, MRIs, and ultrasounds with guided educational insights |
-| 📊 **Results Dashboard** | Unified results screen with structured, color-coded findings and medical disclaimers |
+| 💊 **Medication Scanner** | Scan medication boxes via camera/gallery; get usage info, dosage, side effects & contraindications. (Mobile & Web) |
+| 📄 **Document Analysis** | Upload prescriptions, lab reports, blood work; extracts key findings and abnormal values. (Mobile & Web) |
+| 🩻 **Medical Imaging** | Analyze X-rays, CT scans, MRIs, and ultrasounds with guided educational insights. (Mobile & Web) |
+| 🌐 **Modern Web Support** | Engineered with platform-aware byte-based processing for seamless browser analysis without file system dependencies. |
+| 📊 **Results Dashboard** | Unified results screen with structured, color-coded findings and premium glassmorphism design. |
 
 ---
 
@@ -26,9 +27,9 @@
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) `^3.11.3`
-- Dart SDK `^3.11.3`
-- Android Studio / Xcode (for mobile deployment)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) `^3.41.5`
+- Dart SDK `^3.5.0`
+- Android Studio / Xcode (for mobile) or Chrome (for web)
 
 ### Installation
 
@@ -86,15 +87,11 @@ lib/
 ```
 User captures image
         │
-        ▼
-  OCR Service extracts text
-        │
-        ▼
-  MedicalAnalyzerService processes text
+        MedicalAnalyzerService processes data
         │
         ├── Medication? → matches local DB + pattern analysis
         ├── Document?   → detects type, extracts findings, flags abnormals
-        └── Imaging?    → detects imaging type + body part, provides context
+        └── Imaging?    → detects type + body part, provides context (simulation on Web)
         │
         ▼
   MedicalDataProvider (state)
@@ -109,11 +106,11 @@ User captures image
 
 | Package | Purpose |
 |---|---|
-| `flutter/material` | UI framework |
-| `provider` | State management |
-| `image_picker` | Camera & gallery access |
-| `http` | API communication |
-| `json_annotation` | JSON serialization |
+| `fl_chart` | Data visualization & trends |
+| `supabase_flutter` | Backend & authentication |
+| `google_mlkit_text_recognition` | Mobile OCR capabilities |
+| `path_provider` | Local storage management |
+| `shared_preferences` | Persistent app settings |
 
 ---
 

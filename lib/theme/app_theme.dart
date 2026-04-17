@@ -7,16 +7,53 @@ class AppTheme {
   static const Color seedColor = Color(0xFF1E3A8A);
 
   // Light theme colors
-  static const Color lightBg = Color(0xFFF8FAFC);
+  static const Color lightBg = Color(0xFFF1F5F9); // Lighter, more modern slate
   static const Color lightText = Color(0xFF0F172A);
   static const Color lightCardBg = Color(0xFFFFFFFF);
   static const Color lightBorder = Color(0xFFE2E8F0);
 
   // Dark theme colors
-  static const Color darkBg = Color(0xFF0F172A);
+  static const Color darkBg = Color(0xFF0F172A); // Rich dark slate instead of near-black
   static const Color darkText = Color(0xFFF8FAFC);
   static const Color darkCardBg = Color(0xFF1E293B);
   static const Color darkBorder = Color(0xFF334155);
+
+  // Premium Gradients
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient secondaryGradient = LinearGradient(
+    colors: [Color(0xFF0D9488), Color(0xFF14B8A6)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient accentGradient = LinearGradient(
+    colors: [Color(0xFF7C3AED), Color(0xFF8B5CF6)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient medicalGradient = LinearGradient(
+    colors: [Color(0xFF2DD4BF), Color(0xFF0D9488)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient dangerGradient = LinearGradient(
+    colors: [Color(0xFFEF4444), Color(0xFFF87171)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient warningGradient = LinearGradient(
+    colors: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
 
   static ThemeData lightTheme() {
     return ThemeData(
@@ -30,7 +67,7 @@ class AppTheme {
         brightness: Brightness.light,
       ),
       scaffoldBackgroundColor: lightBg,
-      textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
+      textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: lightText,
         displayColor: lightText,
       ),
@@ -94,8 +131,8 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: lightCardBg,
         indicatorColor: primaryColor.withValues(alpha: 0.1),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: primaryColor, size: 28);
           }
           return IconThemeData(
@@ -103,9 +140,9 @@ class AppTheme {
             size: 24,
           );
         }),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return TextStyle(
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
               color: primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -138,7 +175,7 @@ class AppTheme {
         brightness: Brightness.dark,
       ),
       scaffoldBackgroundColor: darkBg,
-      textTheme: GoogleFonts.plusJakartaSansTextTheme().apply(
+      textTheme: GoogleFonts.outfitTextTheme().apply(
         bodyColor: darkText,
         displayColor: darkText,
       ),
@@ -202,8 +239,8 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkCardBg,
         indicatorColor: primaryColor.withValues(alpha: 0.2),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: primaryColor, size: 28);
           }
           return IconThemeData(
@@ -211,9 +248,9 @@ class AppTheme {
             size: 24,
           );
         }),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
-            return TextStyle(
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const TextStyle(
               color: primaryColor,
               fontSize: 12,
               fontWeight: FontWeight.w600,

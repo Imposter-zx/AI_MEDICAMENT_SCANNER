@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/EXTENDED_MEDICATIONS_DATABASE.dart';
+import '../services/extended_medications_database.dart';
 import '../models/models.dart';
 import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
 
 class MedicationSearchScreen extends StatefulWidget {
   const MedicationSearchScreen({super.key});
@@ -37,8 +38,12 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('Medication Database'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(70),
           child: Padding(
@@ -49,7 +54,7 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
                 hintText: 'Search by name, ingredient, or use...',
                 prefixIcon: const Icon(Icons.search),
                 filled: true,
-                fillColor: Theme.of(context).cardColor,
+                fillColor: Theme.of(context).cardColor.withValues(alpha: 0.8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
@@ -59,16 +64,18 @@ class _MedicationSearchScreenState extends State<MedicationSearchScreen> {
           ),
         ),
       ),
-      body: _filteredMeds.isEmpty
-          ? const Center(child: Text('No medications found.'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _filteredMeds.length,
-              itemBuilder: (context, index) {
-                final med = _filteredMeds[index];
-                return _buildMedCard(med);
-              },
-            ),
+      body: PremiumBackground(
+        child: _filteredMeds.isEmpty
+            ? const Center(child: Text('No medications found.'))
+            : ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+                itemCount: _filteredMeds.length,
+                itemBuilder: (context, index) {
+                  final med = _filteredMeds[index];
+                  return _buildMedCard(med);
+                },
+              ),
+      ),
     );
   }
 

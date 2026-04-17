@@ -6,6 +6,8 @@ import 'package:ai_medicament_scanner/l10n/app_localizations.dart';
 import '../data/pharmacy_repository_impl.dart';
 import '../domain/repositories/pharmacy_repository.dart';
 import '../services/pharmacy_service.dart';
+import '../widgets/premium_widgets.dart';
+import '../widgets/premium_background.dart';
 
 class PharmacyFinderScreen extends StatefulWidget {
   final String? medicationName;
@@ -83,8 +85,12 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('📍 Pharmacy Finder'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: _loadPharmacies,
@@ -92,34 +98,37 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-              if (_errorMessage != null) ...[
-                Container(
-                  color: Colors.red.shade100,
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.all(8),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.error, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
-                      TextButton(
-                        onPressed: () => Navigator.pushNamed(context, '/settings'),
-                        child: Text(AppLocalizations.of(context).translate('settings')), 
-                      ),
-                    ],
-                  ),
-                )
-              ],
-          _buildMapHeader(),
-          _buildSearchContext(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildPharmacyList(),
-          ),
-        ],
+      body: PremiumBackground(
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            if (_errorMessage != null) ...[
+              Container(
+                color: Colors.red.shade100.withValues(alpha: 0.8),
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error, color: Colors.red),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red))),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/settings'),
+                      child: Text(AppLocalizations.of(context).translate('settings')),
+                    ),
+                  ],
+                ),
+              )
+            ],
+            _buildMapHeader(),
+            _buildSearchContext(),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildPharmacyList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -145,22 +154,25 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
   }
 
   Widget _buildSearchContext() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          const Icon(Icons.info_outline, size: 18, color: Colors.blue),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              widget.medicationName != null
-                  ? 'Showing pharmacies stocked with "${widget.medicationName}" near current location.'
-                  : 'Showing nearby pharmacies near current location.',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: GlassCard(
+        padding: const EdgeInsets.all(12),
+        height: 60,
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, size: 18, color: Colors.blue),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                widget.medicationName != null
+                    ? 'Showing pharmacies stocked with "${widget.medicationName}" near current location.'
+                    : 'Showing nearby pharmacies near current location.',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -172,13 +184,14 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
 
     return ListView.builder(
       itemCount: _pharmacies.length,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       itemBuilder: (context, index) {
         final pharmacy = _pharmacies[index];
         return Card(
-          elevation: 2,
+          elevation: 0,
           margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          color: Colors.white.withValues(alpha: 0.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -202,7 +215,7 @@ class _PharmacyFinderScreenState extends State<PharmacyFinderScreen> {
                 const SizedBox(height: 4),
                 Text(
                   pharmacy.address,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
                 const SizedBox(height: 12),
                 Row(

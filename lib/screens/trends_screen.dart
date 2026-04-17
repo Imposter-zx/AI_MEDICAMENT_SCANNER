@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../models/models.dart';
+import '../widgets/premium_background.dart';
 
 class TrendsScreen extends StatelessWidget {
   const TrendsScreen({super.key});
@@ -19,8 +20,11 @@ class TrendsScreen extends StatelessWidget {
       item.userId == (activeProfile?.id ?? 'default')).toList();
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text('📊 Health Trends'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           if (activeProfile != null)
@@ -35,25 +39,27 @@ class TrendsScreen extends StatelessWidget {
             ),
         ],
       ),
-      body: activeProfile == null 
-        ? const Center(child: Text('Please select a profile to view trends.'))
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionHeader('Medication Adherence'),
-                const SizedBox(height: 16),
-                _buildAdherenceChart(context),
-                const SizedBox(height: 32),
-                _buildSectionHeader('Lab Results History'),
-                const SizedBox(height: 16),
-                _buildLabResultsChart(context, userHistory),
-                const SizedBox(height: 32),
-                _buildInsightCard(context, activeProfile),
-              ],
-            ),
-          ),
+      body: PremiumBackground(
+        child: activeProfile == null
+            ? const Center(child: Text('Please select a profile to view trends.'))
+            : SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionHeader('Medication Adherence'),
+                    const SizedBox(height: 16),
+                    _buildAdherenceChart(context),
+                    const SizedBox(height: 32),
+                    _buildSectionHeader('Lab Results History'),
+                    const SizedBox(height: 16),
+                    _buildLabResultsChart(context, userHistory),
+                    const SizedBox(height: 32),
+                    _buildInsightCard(context, activeProfile),
+                  ],
+                ),
+              ),
+      ),
     );
   }
 
@@ -70,7 +76,7 @@ class TrendsScreen extends StatelessWidget {
       height: 250,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
@@ -161,7 +167,7 @@ class TrendsScreen extends StatelessWidget {
       height: 250,
       padding: const EdgeInsets.only(top: 24, bottom: 12, right: 24, left: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
@@ -215,7 +221,7 @@ class TrendsScreen extends StatelessWidget {
       height: 250,
       padding: const EdgeInsets.only(top: 24, bottom: 12, right: 24, left: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white.withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
       ),
@@ -270,8 +276,15 @@ class TrendsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.blue.shade700, Colors.blue.shade900]),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,6 +4,8 @@ import '../services/ai_chat_service.dart';
 import '../services/openai_chat_service.dart';
 import '../providers/medical_data_provider.dart';
 import '../providers/user_profile_provider.dart';
+import '../widgets/premium_background.dart';
+import '../widgets/premium_widgets.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -88,8 +90,11 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('AI Health Chat'),
+        title: const Text('AI Health Chat', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
@@ -105,34 +110,51 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _buildHealthDisclaimer(),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildChatBubble(message['text'], message['isUser']);
-              },
-            ),
-          ),
-          if (_isTyping)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                children: [
-                  SizedBox(width: 8, height: 8, child: CircularProgressIndicator(strokeWidth: 2)),
-                  SizedBox(width: 12),
-                  Text('Analyzing medical context...', style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic)),
-                ],
+      body: PremiumBackground(
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            _buildHealthDisclaimer(),
+            Expanded(
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  return _buildChatBubble(message['text'], message['isUser']);
+                },
               ),
             ),
-          _buildQuickPrompts(),
-          _buildInputArea(),
-        ],
+            if (_isTyping)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 12,
+                      height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(Theme.of(context).primaryColor),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Analyzing medical context...',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontStyle: FontStyle.italic,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            _buildQuickPrompts(),
+            _buildInputArea(),
+          ],
+        ),
       ),
     );
   }
@@ -141,14 +163,14 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       width: double.infinity,
       color: Colors.orange.withValues(alpha: 0.1),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       child: const Row(
         children: [
-          Icon(Icons.info_outline, size: 14, color: Colors.orange),
-          SizedBox(width: 8),
+          Icon(Icons.warning_amber_rounded, size: 16, color: Colors.orange),
+          SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Educational purposes only. Not professional medical advice.',
+              'Educational purposes only. Always consult a professional for medical decisions.',
               style: TextStyle(fontSize: 10, color: Colors.orange, fontWeight: FontWeight.bold),
             ),
           ),
@@ -163,25 +185,31 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.8),
         decoration: BoxDecoration(
-          color: isUser ? Colors.blue : Theme.of(context).cardColor,
+          color: isUser 
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.9) 
+              : Colors.white.withValues(alpha: 0.6),
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isUser ? 16 : 0),
-            bottomRight: Radius.circular(isUser ? 0 : 16),
+            topLeft: const Radius.circular(20),
+            topRight: const Radius.circular(20),
+            bottomLeft: Radius.circular(isUser ? 20 : 4),
+            bottomRight: Radius.circular(isUser ? 4 : 20),
           ),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05), 
+              blurRadius: 10, 
+              offset: const Offset(0, 4)
+            ),
           ],
         ),
         child: Text(
           text,
           style: TextStyle(
-            color: isUser ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+            color: isUser ? Colors.white : Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
-            height: 1.4,
+            height: 1.5,
           ),
         ),
       ),
@@ -221,25 +249,41 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: Colors.white.withValues(alpha: 0.4),
         border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1))),
       ),
       child: SafeArea(
+        top: false,
         child: Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: _controller,
-                decoration: const InputDecoration(
-                  hintText: 'Ask your health assistant...',
-                  border: InputBorder.none,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
                 ),
-                onSubmitted: (_) => _sendMessage(),
+                child: TextField(
+                  controller: _controller,
+                  decoration: const InputDecoration(
+                    hintText: 'Ask your health assistant...',
+                    border: InputBorder.none,
+                  ),
+                  onSubmitted: (_) => _sendMessage(),
+                ),
               ),
             ),
-            IconButton(
-              onPressed: _sendMessage,
-              icon: const Icon(Icons.send, color: Colors.blue),
+            const SizedBox(width: 12),
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                onPressed: _sendMessage,
+                icon: const Icon(Icons.send, color: Colors.white, size: 20),
+              ),
             ),
           ],
         ),

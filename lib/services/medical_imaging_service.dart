@@ -1,14 +1,24 @@
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'dart:io';
 import 'package:ai_medicament_scanner/models/models.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/foundation.dart' show kIsWeb;
+
 
 class MedicalImagingService {
   final TextRecognizer _textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
   Future<MedicalImagingResult?> analyzeImage(String imagePath) async {
+    if (kIsWeb) {
+      return MedicalImagingResult(
+        imagingType: 'Simulation',
+        bodyPart: 'Chest/Abdomen',
+        description: 'Web simulation of medical imaging analysis.',
+        observedAreas: ['Area A clear', 'Area B normal'],
+        areasOfInterest: [],
+        confidenceLevel: 'High (Mock)',
+        simpleExplanation: 'Imaging analysis is simulated on web.',
+        requiresUrgentReview: false,
+      );
+    }
     try {
       final inputImage = InputImage.fromFilePath(imagePath);
       final RecognizedText recognizedText = await _textRecognizer.processImage(inputImage);

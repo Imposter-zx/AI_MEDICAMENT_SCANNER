@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
 import '../models/models.dart';
 import '../models/medicine_cache_model.dart';
 import '../services/medical_analyzer_service.dart';
@@ -21,6 +22,7 @@ class MedicalDataProvider with ChangeNotifier {
   MedicalDocument? currentDocument;
   MedicalImagingResult? currentImagingResult;
   String? currentImagePath;
+  Uint8List? currentImageBytes;
   bool isLoading = false;
   String? errorMessage;
 
@@ -44,9 +46,10 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeMedicalImage(String imagePath, String userId) async {
+  Future<void> analyzeMedicalImage(String imagePath, String userId, {Uint8List? bytes}) async {
     _startLoading();
     currentImagePath = imagePath;
+    currentImageBytes = bytes;
     try {
       currentImagingResult = await MedicalImagingService().analyzeImage(
         imagePath,
@@ -88,7 +91,7 @@ class MedicalDataProvider with ChangeNotifier {
       history.insert(0, item);
       if (history.length > 20) history.removeLast();
 
-      final historyJson = history
+      final List<String> historyJson = history
           .map((item) => json.encode(item.toMap()))
           .toList();
       await _storage.setHistory(historyJson);
@@ -98,9 +101,10 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeMedication(String imagePath, String userId) async {
+  Future<void> analyzeMedication(String imagePath, String userId, {Uint8List? bytes}) async {
     _startLoading();
     currentImagePath = imagePath;
+    currentImageBytes = bytes;
     _cacheHit = false;
     _cacheStatus = null;
 
@@ -163,9 +167,10 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> analyzeDocument(String imagePath, String userId) async {
+  Future<void> analyzeDocument(String imagePath, String userId, {Uint8List? bytes}) async {
     _startLoading();
     currentImagePath = imagePath;
+    currentImageBytes = bytes;
     try {
       final text = await _ocrService.extractTextFromImage(imagePath);
       currentDocument = await _analyzerService.analyzeDocument(text);
@@ -190,32 +195,6 @@ class MedicalDataProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _analyzeMedicalImage(String imagePath, String userId) async {
-    _startLoading();
-    currentImagePath = imagePath;
-    try {
-      currentImagingResult = await _analyzerService.analyzeMedicalImage(
-        imagePath,
-      );
-
-      if (currentImagingResult != null) {
-        await _saveHistoryItem(
-          HistoryItem(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            userId: userId,
-            timestamp: DateTime.now(),
-            type: 'imaging',
-            data: currentImagingResult!,
-            imagePath: imagePath,
-          ),
-        );
-      }
-
-      _stopLoading();
-    } catch (e) {
-      _handleError(e.toString());
-    }
-  }
 
   void _startLoading() {
     isLoading = true;

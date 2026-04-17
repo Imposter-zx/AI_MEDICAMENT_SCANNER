@@ -1,8 +1,3 @@
-
-
-// Note: No .g.dart was found in outpust so manual serialization or build_runner is needed
-// I'll provide standard classes for now
-
 class Medication {
   final String name;
   final String? activeIngredient;
@@ -48,17 +43,17 @@ class Medication {
 
   factory Medication.fromMap(Map<String, dynamic> map) {
     return Medication(
-      name: map['name'],
-      activeIngredient: map['activeIngredient'],
-      manufacturer: map['manufacturer'],
-      usedFor: List<String>.from(map['usedFor']),
-      whenToUse: List<String>.from(map['whenToUse']),
-      contraindications: List<String>.from(map['contraindications']),
-      dosage: map['dosage'],
-      sideEffects: List<String>.from(map['sideEffects']),
-      simpleExplanation: map['simpleExplanation'],
+      name: map['name'] ?? 'Unknown Medication',
+      activeIngredient: map['activeIngredient']?.toString(),
+      manufacturer: map['manufacturer']?.toString(),
+      usedFor: map['usedFor'] != null ? List<String>.from(map['usedFor']) : [],
+      whenToUse: map['whenToUse'] != null ? List<String>.from(map['whenToUse']) : [],
+      contraindications: map['contraindications'] != null ? List<String>.from(map['contraindications']) : [],
+      dosage: map['dosage']?.toString(),
+      sideEffects: map['sideEffects'] != null ? List<String>.from(map['sideEffects']) : [],
+      simpleExplanation: map['simpleExplanation'] ?? 'No explanation available.',
       requiresPrescription: map['requiresPrescription'] ?? false,
-      imagePath: map['imagePath'],
+      imagePath: map['imagePath']?.toString(),
     );
   }
 }
@@ -96,13 +91,15 @@ class MedicalDocument {
 
   factory MedicalDocument.fromMap(Map<String, dynamic> map) {
     return MedicalDocument(
-      documentType: map['documentType'],
-      extractedText: map['extractedText'],
-      keyFindings: List<KeyFinding>.from(map['keyFindings']?.map((x) => KeyFinding.fromMap(x))),
-      abnormalValues: List<String>.from(map['abnormalValues']),
-      recommendations: List<String>.from(map['recommendations']),
-      dateCreated: map['dateCreated'] != null ? DateTime.parse(map['dateCreated']) : null,
-      imagePath: map['imagePath'],
+      documentType: map['documentType'] ?? 'Unknown Document',
+      extractedText: map['extractedText'] ?? '',
+      keyFindings: map['keyFindings'] != null 
+          ? List<KeyFinding>.from(map['keyFindings'].map((x) => KeyFinding.fromMap(x as Map<String, dynamic>))) 
+          : [],
+      abnormalValues: map['abnormalValues'] != null ? List<String>.from(map['abnormalValues']) : [],
+      recommendations: map['recommendations'] != null ? List<String>.from(map['recommendations']) : [],
+      dateCreated: map['dateCreated'] != null ? DateTime.tryParse(map['dateCreated']) : null,
+      imagePath: map['imagePath']?.toString(),
     );
   }
 }
@@ -134,11 +131,11 @@ class KeyFinding {
 
   factory KeyFinding.fromMap(Map<String, dynamic> map) {
     return KeyFinding(
-      label: map['label'],
-      value: map['value'],
-      normalRange: map['normalRange'],
-      isAbnormal: map['isAbnormal'],
-      interpretation: map['interpretation'],
+      label: map['label'] ?? 'Unknown',
+      value: map['value']?.toString() ?? 'N/A',
+      normalRange: map['normalRange']?.toString(),
+      isAbnormal: map['isAbnormal'] ?? false,
+      interpretation: map['interpretation']?.toString(),
     );
   }
 }
@@ -182,23 +179,24 @@ class MedicalImagingResult {
 
   factory MedicalImagingResult.fromMap(Map<String, dynamic> map) {
     return MedicalImagingResult(
-      imagingType: map['imagingType'],
-      bodyPart: map['bodyPart'],
-      description: map['description'],
-      observedAreas: List<String>.from(map['observedAreas']),
-      areasOfInterest: List<String>.from(map['areasOfInterest']),
-      confidenceLevel: map['confidenceLevel'],
-      simpleExplanation: map['simpleExplanation'],
-      requiresUrgentReview: map['requiresUrgentReview'],
-      imagePath: map['imagePath'],
+      imagingType: map['imagingType'] ?? 'Unknown Imaging',
+      bodyPart: map['bodyPart'] ?? 'Unknown',
+      description: map['description'] ?? '',
+      observedAreas: map['observedAreas'] != null ? List<String>.from(map['observedAreas']) : [],
+      areasOfInterest: map['areasOfInterest'] != null ? List<String>.from(map['areasOfInterest']) : [],
+      confidenceLevel: map['confidenceLevel'] ?? 'N/A',
+      simpleExplanation: map['simpleExplanation'] ?? '',
+      requiresUrgentReview: map['requiresUrgentReview'] ?? false,
+      imagePath: map['imagePath']?.toString(),
     );
   }
 }
+
 class HistoryItem {
   final String id;
-  final String userId; // The ID of the profile this history belongs to
+  final String userId; 
   final DateTime timestamp;
-  final String type; // 'medication', 'document', 'imaging'
+  final String type; 
   final dynamic data;
   final String? imagePath;
 
@@ -217,39 +215,42 @@ class HistoryItem {
       'userId': userId,
       'timestamp': timestamp.toIso8601String(),
       'type': type,
-      'data': data.toMap(),
+      'data': data?.toMap(),
       'imagePath': imagePath,
     };
   }
 
   factory HistoryItem.fromMap(Map<String, dynamic> map) {
-    final type = map['type'];
-    final dataMap = map['data'];
+    final type = map['type']?.toString();
+    final dataMap = map['data'] as Map<String, dynamic>?;
     dynamic data;
 
-    if (type == 'medication') {
-      data = Medication.fromMap(dataMap);
-    } else if (type == 'document') {
-      data = MedicalDocument.fromMap(dataMap);
-    } else if (type == 'imaging') {
-      data = MedicalImagingResult.fromMap(dataMap);
+    if (dataMap != null) {
+      if (type == 'medication') {
+        data = Medication.fromMap(dataMap);
+      } else if (type == 'document') {
+        data = MedicalDocument.fromMap(dataMap);
+      } else if (type == 'imaging') {
+        data = MedicalImagingResult.fromMap(dataMap);
+      }
     }
 
     return HistoryItem(
-      id: map['id'],
+      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
       userId: map['userId'] ?? 'default',
-      timestamp: DateTime.parse(map['timestamp']),
-      type: type,
+      timestamp: map['timestamp'] != null ? DateTime.parse(map['timestamp']) : DateTime.now(),
+      type: type ?? 'unknown',
       data: data,
-      imagePath: map['imagePath'],
+      imagePath: map['imagePath']?.toString(),
     );
   }
 }
+
 class UserProfile {
   final String id;
   final String name;
   final int? age;
-  final String relation; // 'Self', 'Child', 'Parent', 'Other'
+  final String relation; 
   final List<String> allergies;
   final List<String> medicalConditions;
   final String? avatarUrl;
@@ -278,13 +279,13 @@ class UserProfile {
 
   factory UserProfile.fromMap(Map<String, dynamic> map) {
     return UserProfile(
-      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      name: map['name'] ?? '',
-      age: map['age'],
-      relation: map['relation'] ?? 'Self',
-      allergies: List<String>.from(map['allergies'] ?? []),
-      medicalConditions: List<String>.from(map['medicalConditions'] ?? []),
-      avatarUrl: map['avatarUrl'],
+      id: map['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: map['name']?.toString() ?? 'New Profile',
+      age: map['age'] is int ? map['age'] : (map['age'] != null ? int.tryParse(map['age'].toString()) : null),
+      relation: map['relation']?.toString() ?? 'Self',
+      allergies: map['allergies'] != null ? List<String>.from(map['allergies']) : [],
+      medicalConditions: map['medicalConditions'] != null ? List<String>.from(map['medicalConditions']) : [],
+      avatarUrl: map['avatarUrl']?.toString(),
     );
   }
 }

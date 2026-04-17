@@ -34,12 +34,17 @@ class MedicationReminder {
 
   factory MedicationReminder.fromMap(Map<String, dynamic> map) {
     return MedicationReminder(
-      id: map['id'],
-      medicationName: map['medicationName'],
-      time: TimeOfDay(hour: map['hour'], minute: map['minute']),
-      dosage: map['dosage'],
-      daysOfWeek: List<int>.from(map['daysOfWeek']),
-      isActive: map['isActive'],
+      id: map['id'] ?? '',
+      medicationName: map['medicationName'] ?? '',
+      time: TimeOfDay(
+        hour: map['hour'] ?? 0,
+        minute: map['minute'] ?? 0,
+      ),
+      dosage: map['dosage'] ?? '',
+      daysOfWeek: map['daysOfWeek'] != null
+          ? List<int>.from(map['daysOfWeek'])
+          : const [1, 2, 3, 4, 5, 6, 7],
+      isActive: map['isActive'] ?? true,
       lastTaken: map['lastTaken'] != null ? DateTime.parse(map['lastTaken']) : null,
     );
   }

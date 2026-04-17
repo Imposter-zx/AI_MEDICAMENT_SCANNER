@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/home_screen.dart';
-import 'screens/auth_screen.dart';
+import 'screens/home_screen.dart';
 import 'providers/locale_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/auth_provider.dart';
@@ -27,16 +27,22 @@ import 'l10n/app_localizations.dart';
 import 'theme/app_theme.dart';
 import 'utils/app_logger.dart';
 import 'services/supabase_service.dart';
+import 'utils/environment_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Root error handling for production
+  FlutterError.onError = (details) {
+    FlutterError.presentError(details);
+    AppLogger.error('Flutter error caught in main', details.exception);
+  };
+
   try {
-    // Initialize Supabase
+    // Initialize Supabase from environment config
     await SupabaseService.init(
-      supabaseUrl: 'https://gzbunfngfjvxxsjzjabu.supabase.co',
-      supabaseAnonKey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6YnVuZm5nZmp2eHhzanpqYWJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NjAyOTYsImV4cCI6MjA5MTEzNjI5Nn0.BNxrxIXikLU3HgLcY5gCoCLmpPLPQUuUnfS35k0gpiI',
+      supabaseUrl: EnvironmentConfig.supabaseUrl,
+      supabaseAnonKey: EnvironmentConfig.supabaseAnonKey,
     );
 
     final localeProvider = LocaleProvider();
@@ -52,6 +58,7 @@ void main() async {
     runApp(MyApp(initialLocale: localeProvider, initialTheme: themeProvider));
   } catch (e) {
     AppLogger.error('Failed to initialize app', e);
+    // Fallback to offline mode
     runApp(
       MyApp(initialLocale: LocaleProvider(), initialTheme: ThemeProvider()),
     );
@@ -126,13 +133,10 @@ class MyApp extends StatelessWidget {
                           ),
                         ),
                       )
-                    : isSignedIn
-                    ? (snapshot.data == true
+                    : (snapshot.data == true
                           ? const HomeScreen()
-                          : const OnboardingScreen())
-                    : const AuthScreen(),
+                          : const OnboardingScreen()),
                 routes: {
-                  '/auth': (context) => const AuthScreen(),
                   '/medication-scan': (context) => const MedicationScanScreen(),
                   '/document-analysis': (context) =>
                       const DocumentAnalysisScreen(),

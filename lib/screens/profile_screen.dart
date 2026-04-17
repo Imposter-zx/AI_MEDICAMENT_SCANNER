@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/user_profile_provider.dart';
 import '../models/models.dart';
 import 'package:uuid/uuid.dart';
+import '../widgets/premium_background.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -93,8 +94,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Profile' : 'Add Family Profile'),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         actions: [
           IconButton(
             onPressed: _saveProfile,
@@ -102,17 +107,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Personal Information',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+      body: PremiumBackground(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Personal Information',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _nameController,
@@ -270,8 +276,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSuggestions(List<String> suggestions, Function(String) onSelected, List<String> current) {
     return Wrap(
