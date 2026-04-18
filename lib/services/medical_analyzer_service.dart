@@ -1,15 +1,34 @@
 import '../models/models.dart';
 import 'extended_medications_database.dart';
+import 'openfda_service.dart';
+import 'openai_chat_service.dart';
 
 class MedicalAnalyzerService {
   // Mock medication data
   final Map<String, Medication> _medicationDB = medications;
 
+  Future<Medication> analyzeMedicationBarcode(String barcode) async {
+    final fda = OpenFDAService();
+    final med = await fda.searchByUpc(barcode);
+    if (med != null) return med;
+    
+    return _buildUnknownMedication();
+  }
+
   Future<Medication> analyzeMedicationText(String text) async {
-    // Normalise text: lowercase, strip non-alphanumeric characters (fixed range: 0-9 not 0-0)
+    // Normalise text: lowercase, strip non-alphanumeric characters
     final normalizedText = text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9\s]'), '');
     
-    // Fuzzy matching: check for brand names and generic names
+    // 1. Try OpenFDA dynamically first
+    final fda = OpenFDAService();
+    // Use the first long word as a search query
+    final words = normalizedText.split(RegExp(r'\s+')).where((w) => w.length > 4).toList();
+    for (String word in words) {
+      final fdaMed = await fda.searchByName(word);
+      if (fdaMed != null) return fdaMed;
+    }
+
+    // 2. Fuzzy matching on local DB
     for (final entry in _medicationDB.entries) {
       final key = entry.key.toLowerCase();
       final name = entry.value.name.toLowerCase();
@@ -25,9 +44,13 @@ class MedicalAnalyzerService {
       if (key.length > 5 && normalizedText.contains(key)) return entry.value;
     }
 
+    return _buildUnknownMedication();
+  }
+
+  Medication _buildUnknownMedication() {
     return Medication(
       name: "Unknown Medication",
-      simpleExplanation: "We couldn't identify this medication in our database.",
+      simpleExplanation: "We couldn't identify this medication in our database or OpenFDA.",
       requiresPrescription: false,
       usedFor: [],
       whenToUse: [],
@@ -107,14 +130,38 @@ class MedicalAnalyzerService {
       ));
     }
 
+    final abnormal = findings.where((f) => f.isAbnormal).map((f) => f.label).toList();
+    List<String> recommendations = [];
+
+    if (type == "lab_test") {
+      recommendations.add("Please consult your doctor to discuss these lab results.");
+      if (abnormal.isNotEmpty) {
+        recommendations.add("Consider speaking with a specialist regarding your abnormal levels.");
+      }
+      
+      // Ping OpenAI for natural language summary
+      try {
+        final summaryPrompt = 'Summarize these lab results for a patient in plain English. Keep it to 3 sentences maximum. Highlight any abnormals. Key findings: ${findings.map((f) => "${f.label}: ${f.value}").join(", ")}. Abnormal values: ${abnormal.join(", ")}.';
+        final summary = await OpenAIChatService().getResponse(summaryPrompt, {});
+        recommendations.insert(0, summary);
+      } catch (e) {
+        // Fallback if API fails or web
+        recommendations.insert(0, "AI Natural Language limit reached or unavailable.");
+      }
+    } else if (type == "prescription") {
+      recommendations.add("Ensure you follow the dosage instructions provided by your pharmacist.");
+    } else {
+      recommendations.add(findings.any((f) => f.isAbnormal) 
+          ? "Consult a specialist regarding abnormal lab results." 
+          : "All values appear within normal range. Continue regular monitoring.");
+    }
+
     return MedicalDocument(
       documentType: type,
       extractedText: text,
       keyFindings: findings,
-      abnormalValues: findings.where((f) => f.isAbnormal).map((f) => f.label).toList(),
-      recommendations: findings.any((f) => f.isAbnormal) 
-          ? ["Consult a specialist regarding abnormal lab results."] 
-          : ["All values appear within normal range. Continue regular monitoring."],
+      abnormalValues: abnormal,
+      recommendations: recommendations,
     );
   }
 

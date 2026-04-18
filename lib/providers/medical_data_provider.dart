@@ -8,12 +8,14 @@ import '../services/ocr_service.dart';
 import '../services/medical_imaging_service.dart';
 import '../services/storage_service.dart';
 import '../services/medicine_cache_service.dart';
+import '../services/barcode_service.dart';
 
 class MedicalDataProvider with ChangeNotifier {
   final MedicalAnalyzerService _analyzerService = MedicalAnalyzerService();
   final OCRService _ocrService = OCRService();
   final StorageService _storage = StorageService();
   final MedicineCacheService _cacheService = MedicineCacheService();
+  final BarcodeService _barcodeService = BarcodeService();
 
   bool _cacheHit = false;
   String? _cacheStatus;
@@ -109,10 +111,15 @@ class MedicalDataProvider with ChangeNotifier {
     _cacheStatus = null;
 
     try {
-      final text = await _ocrService.extractTextFromImage(imagePath);
+      final barcode = await _barcodeService.extractBarcodeFromImage(imagePath);
+      String extractedText = "";
 
-      // Check cache first
-      currentMedication = await _analyzerService.analyzeMedicationText(text);
+      if (barcode != null && barcode.isNotEmpty) {
+        currentMedication = await _analyzerService.analyzeMedicationBarcode(barcode);
+      } else {
+        extractedText = await _ocrService.extractTextFromImage(imagePath);
+        currentMedication = await _analyzerService.analyzeMedicationText(extractedText);
+      }
 
       if (currentMedication != null &&
           currentMedication!.name != "Unknown Medication") {
@@ -141,7 +148,7 @@ class MedicalDataProvider with ChangeNotifier {
           activeIngredient: currentMedication!.activeIngredient,
           manufacturer: currentMedication!.manufacturer,
           lastScannedDate: DateTime.now(),
-          extractedOCRText: text,
+          extractedOCRText: extractedText.isNotEmpty ? extractedText : 'Barcoded Scanned',
           scanCount: cachedMedicine?.scanCount ?? 1,
         );
 
