@@ -314,7 +314,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           RadioListTile<String>(
             title: const Row(
               children: [
-                Text('\u{1F1F1}\u{1F1F8}'),
+                Text('\u{1F1EA}\u{1F1F8}'),
                 SizedBox(width: 12),
                 Text('Español (Spanish)'),
               ],
@@ -474,7 +474,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAnalyticsSummary() {
     final summary = AnalyticsService().getUsageSummary();
-    final featureUsage = summary['featureUsage'] as Map<String, dynamic>? ?? {};
+    final featureUsage = (summary['featureUsage'] as Map? ?? {});
     if (featureUsage.isEmpty) {
       return Card(
         child: Padding(

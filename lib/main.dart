@@ -28,6 +28,9 @@ import 'theme/app_theme.dart';
 import 'utils/app_logger.dart';
 import 'services/supabase_service.dart';
 import 'utils/environment_config.dart';
+import 'services/deep_link_service.dart';
+import 'screens/error_screen.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -65,7 +68,7 @@ void main() async {
   }
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final LocaleProvider initialLocale;
   final ThemeProvider initialTheme;
 
@@ -76,7 +79,27 @@ class MyApp extends StatelessWidget {
   });
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DeepLinkService().init(context);
+    });
+  }
+
+  @override
+  void dispose() {
+    DeepLinkService().dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
@@ -89,6 +112,8 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer3<ThemeProvider, LocaleProvider, AuthProvider>(
         builder: (context, themeProvider, localeProvider, authProvider, _) {
+          ErrorWidget.builder = (details) => ErrorScreen(error: details.exception);
+
           return FutureBuilder<bool>(
             future: _checkOnboarding(),
             builder: (context, snapshot) {
@@ -115,6 +140,10 @@ class MyApp extends StatelessWidget {
                 locale: localeProvider.locale,
                 title: 'AI Medicament Scanner',
                 debugShowCheckedModeBanner: false,
+                builder: (context, child) {
+                  return child!;
+                },
+
                 localizationsDelegates: const [
                   AppLocalizations.delegate,
                   GlobalMaterialLocalizations.delegate,

@@ -98,7 +98,9 @@ class StorageService {
     final raw = await _secure.read(key: _keySettings);
     if (raw == null || raw.isEmpty) return {};
     try {
-      return json.decode(raw);
+      final decoded = json.decode(raw);
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+      return {};
     } catch (_) {
       return {};
     }
@@ -112,7 +114,9 @@ class StorageService {
     final raw = await _secure.read(key: _keyAnalytics);
     if (raw == null || raw.isEmpty) return {};
     try {
-      return json.decode(raw);
+      final decoded = json.decode(raw);
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+      return {};
     } catch (_) {
       return {};
     }
@@ -137,7 +141,9 @@ class StorageService {
 
   Future<bool> importData(String jsonString) async {
     try {
-      final data = json.decode(jsonString) as Map<String, dynamic>;
+      final decoded = json.decode(jsonString);
+      if (decoded is! Map) return false;
+      final data = decoded.cast<String, dynamic>();
 
       if (data['profiles'] != null) {
         await setProfiles(List<String>.from(data['profiles']));
@@ -152,7 +158,10 @@ class StorageService {
         await setHistory(List<String>.from(data['history']));
       }
       if (data['settings'] != null) {
-        await setSettings(Map<String, dynamic>.from(data['settings']));
+        final settingsMap = data['settings'];
+        if (settingsMap is Map) {
+          await setSettings(settingsMap.cast<String, dynamic>());
+        }
       }
 
       return true;

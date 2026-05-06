@@ -81,7 +81,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: lightCardBg,
         elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.1),
+        shadowColor: Colors.black.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
       ),
@@ -125,18 +125,18 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
-        hintStyle: TextStyle(color: lightText.withValues(alpha: 0.5)),
+        hintStyle: TextStyle(color: lightText.withOpacity(0.5)),
       ),
       iconTheme: const IconThemeData(color: lightText, size: 24),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: lightCardBg,
-        indicatorColor: primaryColor.withValues(alpha: 0.1),
+        indicatorColor: primaryColor.withOpacity(0.1),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: primaryColor, size: 28);
           }
           return IconThemeData(
-            color: lightText.withValues(alpha: 0.6),
+            color: lightText.withOpacity(0.6),
             size: 24,
           );
         }),
@@ -149,7 +149,7 @@ class AppTheme {
             );
           }
           return TextStyle(
-            color: lightText.withValues(alpha: 0.6),
+            color: lightText.withOpacity(0.6),
             fontSize: 12,
           );
         }),
@@ -189,7 +189,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: darkCardBg,
         elevation: 4,
-        shadowColor: Colors.black.withValues(alpha: 0.3),
+        shadowColor: Colors.black.withOpacity(0.3),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         clipBehavior: Clip.antiAlias,
       ),
@@ -233,18 +233,18 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: primaryColor, width: 2),
         ),
-        hintStyle: TextStyle(color: darkText.withValues(alpha: 0.5)),
+        hintStyle: TextStyle(color: darkText.withOpacity(0.5)),
       ),
       iconTheme: const IconThemeData(color: darkText, size: 24),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkCardBg,
-        indicatorColor: primaryColor.withValues(alpha: 0.2),
+        indicatorColor: primaryColor.withOpacity(0.2),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return const IconThemeData(color: primaryColor, size: 28);
           }
           return IconThemeData(
-            color: darkText.withValues(alpha: 0.6),
+            color: darkText.withOpacity(0.6),
             size: 24,
           );
         }),
@@ -257,7 +257,7 @@ class AppTheme {
             );
           }
           return TextStyle(
-            color: darkText.withValues(alpha: 0.6),
+            color: darkText.withOpacity(0.6),
             fontSize: 12,
           );
         }),

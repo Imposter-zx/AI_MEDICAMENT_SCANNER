@@ -63,8 +63,11 @@ class AnalyticsService {
   }
 
   Map<String, dynamic> getUsageSummary() {
+    final featureUsage = (_data['featureUsage'] is Map) 
+        ? (_data['featureUsage'] as Map).cast<String, dynamic>() 
+        : <String, dynamic>{};
     return {
-      'featureUsage': _data['featureUsage'] ?? {},
+      'featureUsage': featureUsage,
       'totalEvents': ((_data['events'] as List?) ?? []).length,
       'totalSearches': ((_data['searches'] as List?) ?? []).length,
     };

@@ -20,7 +20,8 @@ class AICacheService {
       final cacheData = prefs.getString(_cacheKey);
       if (cacheData == null) return null;
 
-      final Map<String, dynamic> cache = jsonDecode(cacheData);
+      final decoded = jsonDecode(cacheData);
+      final Map<String, dynamic> cache = decoded is Map ? decoded.cast<String, dynamic>() : {};
       final hash = _hashPrompt(prompt);
       
       return cache[hash];
@@ -36,7 +37,10 @@ class AICacheService {
       
       Map<String, dynamic> cache = {};
       if (cacheData != null) {
-        cache = jsonDecode(cacheData);
+        final decoded = jsonDecode(cacheData);
+        if (decoded is Map) {
+          cache = decoded.cast<String, dynamic>();
+        }
       }
 
       final hash = _hashPrompt(prompt);

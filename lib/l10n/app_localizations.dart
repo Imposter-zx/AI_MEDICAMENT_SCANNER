@@ -136,6 +136,34 @@ class AppLocalizations {
       'testMarker': 'Test / Marker',
       'value': 'Value',
       'normalRange': 'Normal Range',
+      'medicineLibrary': 'Medicine Library',
+      'medicineLibrarySubtitle': 'OpenFDA · RxNorm · Local DB',
+      'searchDrugHint': 'Search drug name, ingredient, or use…',
+      'noResultsFound': 'No results found',
+      'tryDifferentSearch': 'Try a broader search term',
+      'searchingDatabases': 'Searching databases…',
+      'checkInteraction': 'Check Interaction',
+      'interactionResults': 'Interaction Results',
+      'noInteractionsFound': 'No known significant interactions found.',
+      'consultPharmacist': 'Always consult your pharmacist.',
+      'prescriptionRequired': 'Prescription Required',
+      'sourceOpenFDA': 'Source: OpenFDA',
+      'sourceRxNorm': 'Source: RxNorm',
+      'sourceLocal': 'Source: Local DB',
+      'description': 'Description',
+      'usedFor': 'Used For',
+      'dosage': 'Dosage',
+      'educationalOnly': '⚕️ For educational use only. Always consult a healthcare professional.',
+      'clearSelection': 'Clear',
+      'maxDrugsSelection': 'Maximum 5 drugs for interaction check.',
+      'catAll': 'All',
+      'catPainFever': 'Pain & Fever',
+      'catAntibiotics': 'Antibiotics',
+      'catHeartBP': 'Heart & BP',
+      'catDiabetes': 'Diabetes',
+      'catMentalHealth': 'Mental Health',
+      'catAllergy': 'Allergy',
+      'catDigestive': 'Digestive',
     },
     'ar': {
       'appTitle': 'ماسح الأدوية بالذكاء الاصطناعي',
@@ -252,6 +280,34 @@ class AppLocalizations {
       'testMarker': 'الاختبار / العلامة',
       'value': 'القيمة',
       'normalRange': 'المجال الطبيعي',
+      'medicineLibrary': 'مكتبة الأدوية',
+      'medicineLibrarySubtitle': 'OpenFDA · RxNorm · قاعدة بيانات محلية',
+      'searchDrugHint': 'اسم الدواء أو المكون أو الاستخدام…',
+      'noResultsFound': 'لم يُعثر على نتائج',
+      'tryDifferentSearch': 'جرب مصطلحاً أوسع',
+      'searchingDatabases': 'جارٍ البحث في قواعد البيانات…',
+      'checkInteraction': 'التحقق من التفاعلات',
+      'interactionResults': 'نتائج التفاعلات',
+      'noInteractionsFound': 'لم يتم العثور على تفاعلات مهمة.',
+      'consultPharmacist': 'استشر صيدلانيك دائماً.',
+      'prescriptionRequired': 'يتطلب وصفة طبية',
+      'sourceOpenFDA': 'المصدر: OpenFDA',
+      'sourceRxNorm': 'المصدر: RxNorm',
+      'sourceLocal': 'المصدر: قاعدة البيانات المحلية',
+      'description': 'الوصف',
+      'usedFor': 'يُستخدم لـ',
+      'dosage': 'الجرعة',
+      'educationalOnly': '⚕️ لأغراض تعليمية فقط. استشر دائماً متخصصاً في الرعاية الصحية.',
+      'clearSelection': 'مسح التحديد',
+      'maxDrugsSelection': 'الحد الأقصى 5 أدوية للتحقق من التفاعلات.',
+      'catAll': 'الكل',
+      'catPainFever': 'الألم والحمى',
+      'catAntibiotics': 'المضادات الحيوية',
+      'catHeartBP': 'القلب وضغط الدم',
+      'catDiabetes': 'السكري',
+      'catMentalHealth': 'الصحة النفسية',
+      'catAllergy': 'الحساسية',
+      'catDigestive': 'الجهاز الهضمي',
     },
     'fr': {
       'appTitle': 'Scanner de Médicaments IA',
@@ -368,6 +424,34 @@ class AppLocalizations {
       'testMarker': 'Test / Marqueur',
       'value': 'Valeur',
       'normalRange': 'Plage normale',
+      'medicineLibrary': 'Bibliothèque de Médicaments',
+      'medicineLibrarySubtitle': 'OpenFDA · RxNorm · Base locale',
+      'searchDrugHint': 'Nom du médicament, ingrédient ou usage…',
+      'noResultsFound': 'Aucun résultat trouvé',
+      'tryDifferentSearch': 'Essayez un terme plus large',
+      'searchingDatabases': 'Recherche dans les bases de données…',
+      'checkInteraction': 'Vérifier l\'interaction',
+      'interactionResults': 'Résultats d\'interaction',
+      'noInteractionsFound': 'Aucune interaction significative trouvée.',
+      'consultPharmacist': 'Consultez toujours votre pharmacien.',
+      'prescriptionRequired': 'Ordonnance requise',
+      'sourceOpenFDA': 'Source : OpenFDA',
+      'sourceRxNorm': 'Source : RxNorm',
+      'sourceLocal': 'Source : Base locale',
+      'description': 'Description',
+      'usedFor': 'Indications',
+      'dosage': 'Posologie',
+      'educationalOnly': '⚕️ À des fins éducatives uniquement. Consultez toujours un professionnel de santé.',
+      'clearSelection': 'Effacer',
+      'maxDrugsSelection': 'Maximum 5 médicaments pour la vérification.',
+      'catAll': 'Tout',
+      'catPainFever': 'Douleur & Fièvre',
+      'catAntibiotics': 'Antibiotiques',
+      'catHeartBP': 'Cœur & TA',
+      'catDiabetes': 'Diabète',
+      'catMentalHealth': 'Santé Mentale',
+      'catAllergy': 'Allergie',
+      'catDigestive': 'Digestif',
     },
     'es': {
       'appTitle': 'Escáner de Medicamentos IA',
@@ -484,6 +568,34 @@ class AppLocalizations {
       'testMarker': 'Prueba / Marcador',
       'value': 'Valor',
       'normalRange': 'Rango normal',
+      'medicineLibrary': 'Biblioteca de Medicamentos',
+      'medicineLibrarySubtitle': 'OpenFDA · RxNorm · BD local',
+      'searchDrugHint': 'Nombre del medicamento, ingrediente o uso…',
+      'noResultsFound': 'Sin resultados',
+      'tryDifferentSearch': 'Prueba un término más amplio',
+      'searchingDatabases': 'Buscando en bases de datos…',
+      'checkInteraction': 'Verificar interacción',
+      'interactionResults': 'Resultados de interacción',
+      'noInteractionsFound': 'No se encontraron interacciones significativas.',
+      'consultPharmacist': 'Consulta siempre a tu farmacéutico.',
+      'prescriptionRequired': 'Requiere receta médica',
+      'sourceOpenFDA': 'Fuente: OpenFDA',
+      'sourceRxNorm': 'Fuente: RxNorm',
+      'sourceLocal': 'Fuente: BD local',
+      'description': 'Descripción',
+      'usedFor': 'Indicaciones',
+      'dosage': 'Posología',
+      'educationalOnly': '⚕️ Solo para uso educativo. Consulte siempre a un profesional de salud.',
+      'clearSelection': 'Limpiar',
+      'maxDrugsSelection': 'Máximo 5 medicamentos para verificar.',
+      'catAll': 'Todo',
+      'catPainFever': 'Dolor & Fiebre',
+      'catAntibiotics': 'Antibióticos',
+      'catHeartBP': 'Corazón & TA',
+      'catDiabetes': 'Diabetes',
+      'catMentalHealth': 'Salud Mental',
+      'catAllergy': 'Alergia',
+      'catDigestive': 'Digestivo',
     },
     'de': {
       'appTitle': 'AI Medikamenten-Scanner',
@@ -600,6 +712,34 @@ class AppLocalizations {
       'testMarker': 'Test / Marker',
       'value': 'Wert',
       'normalRange': 'Normalbereich',
+      'medicineLibrary': 'Medikamentenbibliothek',
+      'medicineLibrarySubtitle': 'OpenFDA · RxNorm · Lokale DB',
+      'searchDrugHint': 'Medikamentname, Wirkstoff oder Verwendung…',
+      'noResultsFound': 'Keine Ergebnisse',
+      'tryDifferentSearch': 'Versuchen Sie einen breiteren Begriff',
+      'searchingDatabases': 'Suche in Datenbanken…',
+      'checkInteraction': 'Wechselwirkungen prüfen',
+      'interactionResults': 'Wechselwirkungsergebnisse',
+      'noInteractionsFound': 'Keine bekannten Wechselwirkungen gefunden.',
+      'consultPharmacist': 'Fragen Sie immer Ihren Apotheker.',
+      'prescriptionRequired': 'Verschreibungspflichtig',
+      'sourceOpenFDA': 'Quelle: OpenFDA',
+      'sourceRxNorm': 'Quelle: RxNorm',
+      'sourceLocal': 'Quelle: Lokale DB',
+      'description': 'Beschreibung',
+      'usedFor': 'Angewendet bei',
+      'dosage': 'Dosierung',
+      'educationalOnly': '⚕️ Nur für Bildungszwecke. Konsultieren Sie immer einen Arzt.',
+      'clearSelection': 'Löschen',
+      'maxDrugsSelection': 'Maximal 5 Medikamente prüfen.',
+      'catAll': 'Alle',
+      'catPainFever': 'Schmerz & Fieber',
+      'catAntibiotics': 'Antibiotika',
+      'catHeartBP': 'Herz & Blutdruck',
+      'catDiabetes': 'Diabetes',
+      'catMentalHealth': 'Psychische Gesundheit',
+      'catAllergy': 'Allergie',
+      'catDigestive': 'Verdauung',
     },
   };
 
@@ -718,6 +858,37 @@ class AppLocalizations {
   String get testMarker => translate('testMarker');
   String get value => translate('value');
   String get normalRange => translate('normalRange');
+  String get medicineLibrary => translate('medicineLibrary');
+  String get medicineLibrarySubtitle => translate('medicineLibrarySubtitle');
+  String get searchDrugHint => translate('searchDrugHint');
+  String get noResultsFound => translate('noResultsFound');
+  String get tryDifferentSearch => translate('tryDifferentSearch');
+  String get searchingDatabases => translate('searchingDatabases');
+  String get checkInteraction => translate('checkInteraction');
+  String get interactionResults => translate('interactionResults');
+  String get noInteractionsFound => translate('noInteractionsFound');
+  String get consultPharmacist => translate('consultPharmacist');
+  String get prescriptionRequired => translate('prescriptionRequired');
+  String get sourceOpenFDA => translate('sourceOpenFDA');
+  String get sourceRxNorm => translate('sourceRxNorm');
+  String get sourceLocal => translate('sourceLocal');
+  String get description => translate('description');
+  String get usedFor => translate('usedFor');
+  String get dosage => translate('dosage');
+  String get educationalOnly => translate('educationalOnly');
+  String get clearSelection => translate('clearSelection');
+  String get maxDrugsSelection => translate('maxDrugsSelection');
+  String get catAll => translate('catAll');
+  String get catPainFever => translate('catPainFever');
+  String get catAntibiotics => translate('catAntibiotics');
+  String get catHeartBP => translate('catHeartBP');
+  String get catDiabetes => translate('catDiabetes');
+  String get catMentalHealth => translate('catMentalHealth');
+  String get catAllergy => translate('catAllergy');
+  String get catDigestive => translate('catDigestive');
+
+  /// True when the current locale is RTL (Arabic, etc.)
+  bool get isRTL => locale.languageCode == 'ar';
 }
 
 class _AppLocalizationsDelegate

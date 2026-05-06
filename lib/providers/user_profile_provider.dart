@@ -2,20 +2,53 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/storage_service.dart';
+import '../services/health_sync_service.dart';
 
 class UserProfileProvider with ChangeNotifier {
   final StorageService _storage = StorageService();
+  final HealthSyncService _healthService = HealthSyncService();
   List<UserProfile> _profiles = [];
   String? _activeProfileId;
   bool _isLoaded = false;
+  bool _isSyncing = false;
 
   List<UserProfile> get profiles => _profiles;
   String? get activeProfileId => _activeProfileId;
   bool get isLoaded => _isLoaded;
+  bool get isSyncing => _isSyncing;
 
   UserProfile? get activeProfile {
     if (_activeProfileId == null || _profiles.isEmpty) return null;
     return _profiles.firstWhere((p) => p.id == _activeProfileId, orElse: () => _profiles.first);
+  }
+
+  Future<void> syncHealthData() async {
+    if (_activeProfileId == null) return;
+    
+    _isSyncing = true;
+    notifyListeners();
+
+    try {
+      if (!_healthService.isAuthorized) {
+        await _healthService.requestAuthorization();
+      }
+
+      final data = await _healthService.fetchLatestData();
+      
+      // Update active profile with new data (this is simplified)
+      final profile = activeProfile;
+      if (profile != null) {
+        // Here we could add logic to update profile metrics based on data
+        debugPrint('[UserProfileProvider] Health data synced: $data');
+      }
+
+      await _healthService.syncWithProfile();
+    } catch (e) {
+      debugPrint('[UserProfileProvider] Health sync error: $e');
+    } finally {
+      _isSyncing = false;
+      notifyListeners();
+    }
   }
 
   UserProfileProvider() {

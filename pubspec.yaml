@@ -59,6 +59,8 @@ dependencies:
   http: ^1.2.1
   crypto: ^3.0.3
   google_mlkit_barcode_scanning: ^0.14.2
+  app_links: ^6.3.2
+
 
 dev_dependencies:
   flutter_test:

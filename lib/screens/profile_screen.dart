@@ -243,7 +243,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 )).toList(),
               ),
               
-              const SizedBox(height: 40),
+              const Text(
+                'External Data',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Consumer<UserProfileProvider>(
+                builder: (context, provider, _) {
+                  return SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: provider.isSyncing ? null : provider.syncHealthData,
+                      icon: provider.isSyncing 
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                        : const Icon(Icons.sync_rounded),
+                      label: Text(provider.isSyncing ? 'Syncing...' : 'Sync Health Data'),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              const Text('Sync steps, heart rate and vitals from HealthKit/Google Fit.', 
+                  style: TextStyle(fontSize: 12, color: Colors.grey)),
+              
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 50,

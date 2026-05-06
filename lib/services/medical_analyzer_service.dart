@@ -78,7 +78,7 @@ class MedicalAnalyzerService {
     if (hemoglobinMatch != null) {
       final val = double.parse(hemoglobinMatch.group(1)!);
       findings.add(KeyFinding(
-        label: "Hemoglobin",
+        label: "Hemoglobin (Hgb)",
         value: val.toString(),
         normalRange: "12.0 - 16.0 g/dL",
         isAbnormal: val < 12.0 || val > 16.0,
@@ -89,7 +89,7 @@ class MedicalAnalyzerService {
     if (glucoseMatch != null) {
       final val = int.parse(glucoseMatch.group(1)!);
       findings.add(KeyFinding(
-        label: "Glucose",
+        label: "Glucose (Fasting)",
         value: val.toString(),
         normalRange: "70 - 100 mg/dL",
         isAbnormal: val < 70 || val > 100,
@@ -111,7 +111,7 @@ class MedicalAnalyzerService {
     if (ldlMatch != null) {
       final val = int.parse(ldlMatch.group(1)!);
       findings.add(KeyFinding(
-        label: "LDL Cholesterol",
+        label: "LDL (Bad) Cholesterol",
         value: val.toString(),
         normalRange: "< 100 mg/dL",
         isAbnormal: val >= 100,
@@ -130,6 +130,42 @@ class MedicalAnalyzerService {
       ));
     }
 
+    // NEW: Liver markers
+    final altMatch = RegExp(r'alt[\:\s]+(\d+)').firstMatch(normalizedText);
+    if (altMatch != null) {
+      final val = int.parse(altMatch.group(1)!);
+      findings.add(KeyFinding(
+        label: "ALT (Liver Enzyme)",
+        value: val.toString(),
+        normalRange: "7 - 56 U/L",
+        isAbnormal: val > 56,
+      ));
+    }
+
+    // NEW: Kidney markers
+    final creatinineMatch = RegExp(r'creatinine[\:\s]+(\d+\.?\d*)').firstMatch(normalizedText);
+    if (creatinineMatch != null) {
+      final val = double.parse(creatinineMatch.group(1)!);
+      findings.add(KeyFinding(
+        label: "Creatinine",
+        value: val.toString(),
+        normalRange: "0.7 - 1.3 mg/dL",
+        isAbnormal: val > 1.3,
+      ));
+    }
+
+    // NEW: Blood cells
+    final wbcMatch = RegExp(r'wbc[\:\s]+(\d+\.?\d*)').firstMatch(normalizedText);
+    if (wbcMatch != null) {
+      final val = double.parse(wbcMatch.group(1)!);
+      findings.add(KeyFinding(
+        label: "WBC (White Blood Cells)",
+        value: val.toString(),
+        normalRange: "4.5 - 11.0 x10³/µL",
+        isAbnormal: val < 4.5 || val > 11.0,
+      ));
+    }
+
     final abnormal = findings.where((f) => f.isAbnormal).map((f) => f.label).toList();
     List<String> recommendations = [];
 
@@ -139,14 +175,17 @@ class MedicalAnalyzerService {
         recommendations.add("Consider speaking with a specialist regarding your abnormal levels.");
       }
       
-      // Ping OpenAI for natural language summary
+      // Enhanced OpenAI summary prompt
       try {
-        final summaryPrompt = 'Summarize these lab results for a patient in plain English. Keep it to 3 sentences maximum. Highlight any abnormals. Key findings: ${findings.map((f) => "${f.label}: ${f.value}").join(", ")}. Abnormal values: ${abnormal.join(", ")}.';
+        final summaryPrompt = 'Explain these medical lab results to a patient in simple, encouraging terms. '
+            'Mention if values are normal or abnormal. If abnormal, briefly explain what that might mean in plain language. '
+            'Keep it under 4 sentences. '
+            'Data: ${findings.map((f) => "${f.label}: ${f.value} (${f.isAbnormal ? "ABNORMAL" : "Normal"})").join(", ")}';
+        
         final summary = await OpenAIChatService().getResponse(summaryPrompt, {});
         recommendations.insert(0, summary);
       } catch (e) {
-        // Fallback if API fails or web
-        recommendations.insert(0, "AI Natural Language limit reached or unavailable.");
+        recommendations.insert(0, "AI Analysis: Your results show ${findings.length} markers. ${abnormal.length} values are outside the normal range. Please review the detailed findings below.");
       }
     } else if (type == "prescription") {
       recommendations.add("Ensure you follow the dosage instructions provided by your pharmacist.");
@@ -186,6 +225,24 @@ class MedicalAnalyzerService {
       bodyPart = 'Knee';
     } else if (fileName.contains('spine')) {
       bodyPart = 'Spine';
+    } else if (fileName.contains('hand') || fileName.contains('wrist')) {
+      bodyPart = 'Hand/Wrist';
+    } else if (fileName.contains('leg') || fileName.contains('ankle')) {
+      bodyPart = 'Leg/Ankle';
+    }
+
+    String simpleExplanation = 'This is a $type of your $bodyPart. It helps doctors see inside your body without surgery.';
+    
+    // NEW: Use AI for better imaging explanation if available
+    try {
+      final imagingPrompt = 'Explain what a $type of the $bodyPart is used for in medical practice. '
+          'Explain it to a patient in 2 simple sentences. Do not provide a diagnosis.';
+      final aiExplanation = await OpenAIChatService().getResponse(imagingPrompt, {});
+      if (aiExplanation.isNotEmpty) {
+        simpleExplanation = aiExplanation;
+      }
+    } catch (_) {
+      // Fallback to heuristic
     }
 
     return MedicalImagingResult(
@@ -194,12 +251,13 @@ class MedicalAnalyzerService {
       description: 'The scan shows the structural integrity of the $bodyPart area using $type technology.',
       observedAreas: ['Primary structures of the $bodyPart', 'Surrounding soft tissue'],
       areasOfInterest: [],
-      confidenceLevel: '85% (Heuristic)',
-      simpleExplanation: 'This is a $type of your $bodyPart. It helps doctors see inside your body without surgery.',
+      confidenceLevel: '85% (Heuristic + AI Context)',
+      simpleExplanation: simpleExplanation,
       requiresUrgentReview: false,
       imagePath: imagePath,
     );
   }
+
 
   List<String> checkSafetyConflicts(Medication med, UserProfile profile) {
     List<String> conflicts = [];

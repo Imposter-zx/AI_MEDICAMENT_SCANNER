@@ -69,13 +69,14 @@ This project was built to demonstrate AI-assisted healthcare information tooling
 |---|---|
 | Architecture | ✅ Clean layered architecture |
 | State Management | ✅ Provider pattern implemented |
-| UI Coverage | ✅ All 4 screens complete |
+| UI Coverage | ✅ 14+ screens complete (Premium UI) |
 | Data Models | ✅ Fully serializable models |
-| OCR Integration | 🔧 Stub — ready for ML Kit integration |
-| External API | 🔧 Stub — URL constants are wired |
-| Local DB | ✅ 3 medications seeded (Aspirin, Paracetamol, Amoxicillin) |
-| Tests | 🔧 Test suite structure created |
-| Documentation | ✅ Comprehensive |
+| OCR Integration | ✅ Google ML Kit (Text & Barcode) |
+| External API | ✅ OpenFDA & RxNorm integration |
+| Local DB | ✅ 70+ common medications seeded |
+| Tests | ✅ Initial test suite coverage |
+| Documentation | ✅ Comprehensive & Up-to-date |
+| Multi-Language | ✅ EN, AR, FR, ES, DE support |
 
 ---
 
@@ -107,13 +108,15 @@ This project was built to demonstrate AI-assisted healthcare information tooling
 
 ## Roadmap
 
-| Priority | Feature |
-|---|---|
-| 🔴 High | Google ML Kit OCR integration |
-| 🔴 High | Expand medication database (100+ entries) |
-| 🟡 Medium | Result history (local Hive/SQLite storage) |
-| 🟡 Medium | Dark mode |
-| 🟡 Medium | Arabic / French / Spanish localization |
-| 🟢 Low | PDF export of results |
-| 🟢 Low | Barcode scanner for medications |
-| 🟢 Low | Gemini/OpenAI integration for AI explanations |
+| Priority | Feature | Status |
+|---|---|---|
+| 🔴 High | Google ML Kit OCR integration | ✅ Complete |
+| 🔴 High | Expand medication database (100+ entries) | 🟡 Progressing (70+) |
+| 🔴 High | Multi-Language support (AR, FR, ES, DE) | ✅ Complete |
+| 🟡 Medium | Result history & Secure Storage | ✅ Complete |
+| 🟡 Medium | Dark mode & Theme system | ✅ Complete |
+| 🟡 Medium | AI Natural Language lab result summaries | ✅ Complete |
+| 🟡 Medium | HealthKit/Google Fit integration | 🟡 Stubbed/In-progress |
+| 🟢 Low | PDF export of reports | ✅ Complete |
+| 🟢 Low | Barcode scanner for medications | ✅ Complete |
+| 🟢 Low | Pharmacy Finder (Google Maps integration) | ✅ Complete |
